@@ -13,10 +13,14 @@ for (const ws of ["core", "sales", "finance", "hr", "data"]) {
   const charts = await p.locator("svg.recharts-surface").count();
   console.log(
     ws.padEnd(8),
-    "charts:", String(charts).padEnd(3),
-    "insights:", /telling you|تقوله/.test(txt) ? "y" : "n",
-    "kpis:", /On-time delivery|Open work/.test(txt) ? "y" : "n",
-    "team:", /Team execution/.test(txt) ? "y" : "n",
+    "charts:",
+    String(charts).padEnd(3),
+    "insights:",
+    /telling you|تقوله/.test(txt) ? "y" : "n",
+    "kpis:",
+    /On-time delivery|Open work/.test(txt) ? "y" : "n",
+    "team:",
+    /Team execution/.test(txt) ? "y" : "n",
   );
   await p.screenshot({ path: `qa-dash-${ws}.png`, fullPage: true });
 }

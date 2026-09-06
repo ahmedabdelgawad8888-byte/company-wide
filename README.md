@@ -5,9 +5,11 @@ A workspace-first operating hub for TryGC. The UI/design system from the provide
 ## Workspaces
 
 ### 1) Core Team
+
 A shared command room for cross-functional execution.
 
 Core seed team:
+
 - Ahmed Essmat — Technology
 - Amr — Operations
 - Alaa — Business Analysis
@@ -19,19 +21,23 @@ Core seed team:
 Core flow: shared priorities → blockers → decisions/meetings → owned actions → due dates → activity/automation review.
 
 ### 2) Sales
+
 Daily commercial execution without turning the hub into a CRM suite.
 
 Sales flow: client activity → outcome → next action → follow-up → meeting → commitment → performance.
 
 ### 3) Finance
+
 A focused accounts and collection workspace.
 
 Finance flow: bill → pre-due reminders → collection action → payment/promise-to-pay → overdue escalation → reporting.
 
 ### 4) HR
+
 People actions, directory, interviews/meetings, HR calendar and people reporting.
 
 ### 5) Data Analysis
+
 Analysis requests, blocked-data work, report delivery, data files, delivery calendar and insight reporting.
 
 ## UX behavior
@@ -49,6 +55,7 @@ Analysis requests, blocked-data work, report delivery, data files, delivery cale
 ## Run locally
 
 ### Windows
+
 Double-click `START_TRYGC_HUB.bat`.
 
 The local preview runs at `http://127.0.0.1:5173`. The Windows launchers automatically
@@ -57,6 +64,7 @@ breaks Vite imports. Files stay in their original folder. Use `BUILD_PRODUCTION.
 to build with the same path handling.
 
 ### macOS / Linux
+
 ```bash
 chmod +x START_TRYGC_HUB.sh
 ./START_TRYGC_HUB.sh

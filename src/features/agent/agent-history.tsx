@@ -82,10 +82,20 @@ export function AgentHistory({
                       className="h-8"
                       aria-label="Conversation title"
                     />
-                    <Button size="sm" variant="ghost" onClick={() => commitRename(item.id)} aria-label="Save title">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => commitRename(item.id)}
+                      aria-label="Save title"
+                    >
                       <Check className="size-3.5" aria-hidden="true" />
                     </Button>
-                    <Button size="sm" variant="ghost" onClick={() => setEditingId(null)} aria-label="Cancel rename">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setEditingId(null)}
+                      aria-label="Cancel rename"
+                    >
                       <X className="size-3.5" aria-hidden="true" />
                     </Button>
                   </div>
@@ -94,7 +104,9 @@ export function AgentHistory({
               return (
                 <div
                   key={item.id}
-                  className={active ? "flex items-center gap-1 bg-accent p-2" : "flex items-center gap-1 p-2"}
+                  className={
+                    active ? "flex items-center gap-1 bg-accent p-2" : "flex items-center gap-1 p-2"
+                  }
                 >
                   <button
                     type="button"
@@ -149,7 +161,12 @@ export function AgentHistory({
               </Button>
             </div>
           ) : (
-            <Button size="sm" variant="ghost" className="self-start" onClick={() => setConfirmingClear(true)}>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="self-start"
+              onClick={() => setConfirmingClear(true)}
+            >
               <Trash2 className="size-3.5" aria-hidden="true" /> Clear history
             </Button>
           )}

@@ -196,7 +196,10 @@ export function WorkspaceDashboard({
             </p>
           </div>
         </div>
-        <div className="flex gap-1 rounded-lg bg-muted/60 p-1" aria-label={t("Analysis period", "فترة التحليل")}>
+        <div
+          className="flex gap-1 rounded-lg bg-muted/60 p-1"
+          aria-label={t("Analysis period", "فترة التحليل")}
+        >
           {RANGES.map(([v, en, ar]) => (
             <Button
               key={v}
@@ -261,7 +264,10 @@ export function WorkspaceDashboard({
         </div>
         <div className="grid gap-3 lg:grid-cols-3">
           {insights.map((i, index) => (
-            <div key={i.title} className={`flex gap-3 rounded-xl border bg-card p-4 leading-relaxed ${index === 0 ? "lg:col-span-2 lg:p-5" : ""}`}>
+            <div
+              key={i.title}
+              className={`flex gap-3 rounded-xl border bg-card p-4 leading-relaxed ${index === 0 ? "lg:col-span-2 lg:p-5" : ""}`}
+            >
               <span className="mt-0.5">
                 <Pill tone={i.tone}>{i.badge}</Pill>
               </span>

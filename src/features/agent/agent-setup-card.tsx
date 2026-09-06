@@ -67,7 +67,10 @@ export function AgentSetupCard({
   return (
     <div className="rounded-lg border border-dashed p-4">
       <div className="flex items-start gap-3">
-        <TriangleAlert className="mt-0.5 size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
+        <TriangleAlert
+          className="mt-0.5 size-5 shrink-0 text-muted-foreground"
+          aria-hidden="true"
+        />
         <div className="min-w-0 flex-1">
           {alternatives.length ? (
             <>

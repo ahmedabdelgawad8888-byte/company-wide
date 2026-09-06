@@ -93,7 +93,8 @@ export function useSpeech() {
   useEffect(() => {
     setSupported(typeof window !== "undefined" && "speechSynthesis" in window);
     return () => {
-      if (typeof window !== "undefined" && "speechSynthesis" in window) window.speechSynthesis.cancel();
+      if (typeof window !== "undefined" && "speechSynthesis" in window)
+        window.speechSynthesis.cancel();
     };
   }, []);
 
