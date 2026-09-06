@@ -1,5 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ExternalLink, KeyRound, Loader2, PlugZap, RefreshCw, RotateCcw, Save, Trash2 } from "lucide-react";
+import {
+  ExternalLink,
+  KeyRound,
+  Loader2,
+  PlugZap,
+  RefreshCw,
+  RotateCcw,
+  Save,
+  Trash2,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "../../components/ui/button";
@@ -142,8 +151,16 @@ export function ConnectionSection() {
             : `No ready provider found yet. ${provider.blurb}`
         }
         action={
-          <Button variant="ghost" size="sm" onClick={() => void scanProviders()} disabled={scanningProviders}>
-            <RefreshCw className={`size-3.5 ${scanningProviders ? "animate-spin" : ""}`} aria-hidden="true" />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => void scanProviders()}
+            disabled={scanningProviders}
+          >
+            <RefreshCw
+              className={`size-3.5 ${scanningProviders ? "animate-spin" : ""}`}
+              aria-hidden="true"
+            />
             Refresh providers
           </Button>
         }
@@ -157,14 +174,18 @@ export function ConnectionSection() {
           {foundProviders.length ? (
             <optgroup label="Found and ready">
               {foundProviders.map((item) => (
-                <option key={item.id} value={item.id}>{item.name} — Ready</option>
+                <option key={item.id} value={item.id}>
+                  {item.name} — Ready
+                </option>
               ))}
             </optgroup>
           ) : null}
           {otherProviders.length ? (
             <optgroup label="Other providers">
               {otherProviders.map((item) => (
-                <option key={item.id} value={item.id}>{item.name}</option>
+                <option key={item.id} value={item.id}>
+                  {item.name}
+                </option>
               ))}
             </optgroup>
           ) : null}
@@ -236,7 +257,9 @@ export function ConnectionSection() {
         <Button
           onClick={() => {
             settings.saveNow();
-            toast.success("API provider, model, endpoint, and saved key are stored in this browser.");
+            toast.success(
+              "API provider, model, endpoint, and saved key are stored in this browser.",
+            );
           }}
         >
           <Save className="size-4" aria-hidden="true" /> Save API settings
@@ -260,7 +283,9 @@ export function ApiKeyField() {
   const [result, setResult] = useState<{ ok: boolean; text: string } | null>(null);
 
   const masked =
-    saved.length > 8 ? `${"•".repeat(Math.min(saved.length - 4, 28))}${saved.slice(-4)}` : "••••••••";
+    saved.length > 8
+      ? `${"•".repeat(Math.min(saved.length - 4, 28))}${saved.slice(-4)}`
+      : "••••••••";
 
   const save = () => {
     const trimmed = draft.trim();
@@ -511,7 +536,11 @@ export function ScheduleSection() {
                 <Pill tone={schedule.enabled ? "success" : "neutral"}>
                   {schedule.enabled ? "On" : "Paused"}
                 </Pill>
-                <Button variant="ghost" size="sm" onClick={() => settings.removeSchedule(schedule.id)}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => settings.removeSchedule(schedule.id)}
+                >
                   Remove
                 </Button>
               </div>

@@ -76,7 +76,11 @@ export function AgentPromptManager({ onRun }: { onRun: (prompt: string) => void 
                 >
                   <Play className="size-3.5" aria-hidden="true" />
                 </Button>
-                <ScheduleDialog promptId={prompt.id} title={prompt.title} {...(schedule ? { existing: schedule } : {})} />
+                <ScheduleDialog
+                  promptId={prompt.id}
+                  title={prompt.title}
+                  {...(schedule ? { existing: schedule } : {})}
+                />
                 {!prompt.builtIn && (
                   <Button
                     variant="ghost"

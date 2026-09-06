@@ -4,13 +4,13 @@ Last verified: 2026-09-06, on a live dev server at `http://127.0.0.1:5173`.
 
 ## Automated gates (all green)
 
-| Gate | Command | Result |
-| --- | --- | --- |
-| Unit / workflow logic | `npm test` | **40 / 40 passed** |
-| TypeScript | `npm run typecheck` | **0 errors** |
-| Lint / format | `npm run lint` | **0 errors** (23 pre-existing react-refresh warnings) |
-| Production build | `BUILD_PRODUCTION.bat` | **passed** (client + SSR + Nitro) |
-| Browser QA | `npm run qa` | **all checks passed, 0 console errors** |
+| Gate                  | Command                | Result                                                |
+| --------------------- | ---------------------- | ----------------------------------------------------- |
+| Unit / workflow logic | `npm test`             | **40 / 40 passed**                                    |
+| TypeScript            | `npm run typecheck`    | **0 errors**                                          |
+| Lint / format         | `npm run lint`         | **0 errors** (23 pre-existing react-refresh warnings) |
+| Production build      | `BUILD_PRODUCTION.bat` | **passed** (client + SSR + Nitro)                     |
+| Browser QA            | `npm run qa`           | **all checks passed, 0 console errors**               |
 
 ## Browser QA coverage
 

@@ -52,11 +52,7 @@ export const providerCatalogue: ProviderDescriptor[] = [
     blurb: "One key, every provider below plus more.",
     keyUrl: "https://vercel.com/docs/ai-gateway",
     envVar: "AI_GATEWAY_API_KEY",
-    fallbackModels: [
-      "anthropic/claude-sonnet-4",
-      "openai/gpt-4.1",
-      "google/gemini-2.5-flash",
-    ],
+    fallbackModels: ["anthropic/claude-sonnet-4", "openai/gpt-4.1", "google/gemini-2.5-flash"],
   },
   {
     id: "anthropic",
@@ -64,7 +60,11 @@ export const providerCatalogue: ProviderDescriptor[] = [
     blurb: "Claude models, called directly.",
     keyUrl: "https://console.anthropic.com/settings/keys",
     envVar: "ANTHROPIC_API_KEY",
-    fallbackModels: ["claude-sonnet-4-20250514", "claude-3-7-sonnet-latest", "claude-3-5-haiku-latest"],
+    fallbackModels: [
+      "claude-sonnet-4-20250514",
+      "claude-3-7-sonnet-latest",
+      "claude-3-5-haiku-latest",
+    ],
   },
   {
     id: "google",
@@ -77,7 +77,8 @@ export const providerCatalogue: ProviderDescriptor[] = [
   {
     id: "ollamaDesktop",
     name: "Ollama Desktop + Cloud",
-    blurb: "Uses the Ollama app running on this computer, including cloud models available to the signed-in account.",
+    blurb:
+      "Uses the Ollama app running on this computer, including cloud models available to the signed-in account.",
     envVar: "OLLAMA_DESKTOP_API_KEY",
     defaultBaseUrl: "http://127.0.0.1:11434/v1",
     fallbackModels: ["kimi-k3:cloud", "qwen3.5:397b-cloud", "gpt-oss:120b-cloud"],
@@ -280,7 +281,11 @@ export function AgentSettingsProvider({ children }: { children: ReactNode }) {
       const next = { ...current, ...patch };
       // A model id belongs to one provider. Carrying it across a provider
       // change sends a name the new endpoint has never heard of.
-      if (patch.providerId && patch.providerId !== current.providerId && patch.modelId === undefined) {
+      if (
+        patch.providerId &&
+        patch.providerId !== current.providerId &&
+        patch.modelId === undefined
+      ) {
         const target = providerCatalogue.find((item) => item.id === patch.providerId);
         next.modelId = target?.fallbackModels[0] ?? "";
       }
@@ -315,9 +320,15 @@ export function AgentSettingsProvider({ children }: { children: ReactNode }) {
           policies: { ...current.policies, [category]: policy },
         })),
       setApiKey: (providerId, key) =>
-        setSettings((current) => ({ ...current, apiKeys: { ...current.apiKeys, [providerId]: key } })),
+        setSettings((current) => ({
+          ...current,
+          apiKeys: { ...current.apiKeys, [providerId]: key },
+        })),
       setBaseUrl: (providerId, url) =>
-        setSettings((current) => ({ ...current, baseUrls: { ...current.baseUrls, [providerId]: url } })),
+        setSettings((current) => ({
+          ...current,
+          baseUrls: { ...current.baseUrls, [providerId]: url },
+        })),
       addPrompt: (title, prompt) =>
         setSettings((current) => ({
           ...current,
@@ -339,7 +350,9 @@ export function AgentSettingsProvider({ children }: { children: ReactNode }) {
             return {
               ...current,
               schedules: current.schedules.map((item) =>
-                item.promptId === promptId ? { ...item, cadence, hour, enabled: !item.enabled } : item,
+                item.promptId === promptId
+                  ? { ...item, cadence, hour, enabled: !item.enabled }
+                  : item,
               ),
             };
           }

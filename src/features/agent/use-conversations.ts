@@ -95,18 +95,25 @@ export function useConversations() {
         // Opening a thread replays its own messages; rewriting them would only
         // bump the timestamp and reorder the list for a read.
         const unchanged =
-          existing?.messages.length === trimmed.length && existing?.messages.at(-1)?.id === trimmed.at(-1)?.id;
+          existing?.messages.length === trimmed.length &&
+          existing?.messages.at(-1)?.id === trimmed.at(-1)?.id;
         if (unchanged) return current;
         const record: Conversation = {
           id,
-          title: existing?.title && existing.title !== "New conversation" ? existing.title : deriveTitle(trimmed),
+          title:
+            existing?.title && existing.title !== "New conversation"
+              ? existing.title
+              : deriveTitle(trimmed),
           createdAt: existing?.createdAt ?? now,
           updatedAt: now,
           ...(meta.provider ? { provider: meta.provider } : {}),
           ...(meta.model ? { model: meta.model } : {}),
           messages: trimmed,
         };
-        const next = [record, ...current.filter((item) => item.id !== id)].slice(0, MAX_CONVERSATIONS);
+        const next = [record, ...current.filter((item) => item.id !== id)].slice(
+          0,
+          MAX_CONVERSATIONS,
+        );
         try {
           window.localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
         } catch {

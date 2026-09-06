@@ -66,7 +66,10 @@ export type RenderPayload =
       fields: { label: string; value: string }[];
       href?: string;
     }
-  | { kind: "exceptions"; items: { title: string; detail: string; severity: string; href: string }[] }
+  | {
+      kind: "exceptions";
+      items: { title: string; detail: string; severity: string; href: string }[];
+    }
   | { kind: "navigate"; path: string };
 
 /** Everything a tool call needs from the running app. */
@@ -125,7 +128,8 @@ function findRecord(ctx: AgentContext, id: string): WorkRecord {
   const exact = ctx.state.records.find((r) => r.id === id && visible(ctx.actor, r));
   if (exact) return exact;
   const partial = ctx.state.records.filter(
-    (r) => visible(ctx.actor, r) && (r.id.startsWith(id) || r.title.toLowerCase() === id.toLowerCase()),
+    (r) =>
+      visible(ctx.actor, r) && (r.id.startsWith(id) || r.title.toLowerCase() === id.toLowerCase()),
   );
   if (partial.length === 1 && partial[0]) return partial[0];
   throw new Error(`Record "${id}" was not found, or you do not have access to it.`);
@@ -205,7 +209,8 @@ function metricsResult(ctx: AgentContext, workspaceId?: string): ToolRunResult {
         {
           label: "On-time delivery",
           value: done.length ? `${percent(onTime.length, done.length)}%` : "—",
-          hint: outstanding > 0 ? `${compact(outstanding)} outstanding` : `${done.length} completed`,
+          hint:
+            outstanding > 0 ? `${compact(outstanding)} outstanding` : `${done.length} completed`,
         },
       ],
     },
@@ -354,7 +359,11 @@ function exceptionsResult(ctx: AgentContext, workspaceId?: string): ToolRunResul
   const order: Record<string, number> = { Escalate: 0, Overdue: 1, "Due soon": 2 };
   items.sort((a, b) => (order[a.severity] ?? 3) - (order[b.severity] ?? 3));
   const top = items.slice(0, 12);
-  return { ok: true, data: { total: items.length, items: top }, render: { kind: "exceptions", items: top } };
+  return {
+    ok: true,
+    data: { total: items.length, items: top },
+    render: { kind: "exceptions", items: top },
+  };
 }
 
 function workloadResult(ctx: AgentContext, workspaceId?: string): ToolRunResult {
@@ -415,9 +424,19 @@ function chartResult(ctx: AgentContext, input: Record<string, unknown>): ToolRun
 
   switch (series) {
     case "work_by_status":
-      return build("bar", "Open work by status", "records", countBy(open, (r) => r.status));
+      return build(
+        "bar",
+        "Open work by status",
+        "records",
+        countBy(open, (r) => r.status),
+      );
     case "work_by_kind":
-      return build("bar", "Open work by type", "records", countBy(open, (r) => titles[r.kind][0]));
+      return build(
+        "bar",
+        "Open work by type",
+        "records",
+        countBy(open, (r) => titles[r.kind][0]),
+      );
     case "work_by_owner":
       return build(
         "bar",
@@ -426,7 +445,12 @@ function chartResult(ctx: AgentContext, input: Record<string, unknown>): ToolRun
         countBy(open, (r) => userName(ctx, r.ownerId)).slice(0, 10),
       );
     case "priority_mix":
-      return build("donut", "Open work by priority", "records", countBy(open, (r) => r.priority));
+      return build(
+        "donut",
+        "Open work by priority",
+        "records",
+        countBy(open, (r) => r.priority),
+      );
     case "overdue_aging":
       return build(
         "bar",
@@ -468,8 +492,7 @@ function chartResult(ctx: AgentContext, input: Record<string, unknown>): ToolRun
       const map = new Map<string, number>();
       for (const r of bills) {
         const currency = r.details["currency"] ?? "SAR";
-        const outstanding =
-          Number(r.details["amount"] ?? 0) - Number(r.details["paid"] ?? 0);
+        const outstanding = Number(r.details["amount"] ?? 0) - Number(r.details["paid"] ?? 0);
         map.set(currency, (map.get(currency) ?? 0) + outstanding);
       }
       return build(
@@ -644,8 +667,7 @@ export function runAgentTool(ctx: AgentContext, name: string, rawInput: unknown)
       const bill = findRecord(ctx, str("billId"));
       if (bill.kind !== "bill") return fail(`"${bill.title}" is not a bill.`);
       const amount = Number(input["amount"] ?? 0);
-      const outstanding =
-        Number(bill.details["amount"] ?? 0) - Number(bill.details["paid"] ?? 0);
+      const outstanding = Number(bill.details["amount"] ?? 0) - Number(bill.details["paid"] ?? 0);
       if (amount <= 0) return fail("A payment must be greater than zero.");
       if (amount > outstanding + 0.000001)
         return fail(`That exceeds the ${num(outstanding)} outstanding on this bill.`);

@@ -23,8 +23,14 @@ export const categoryLabels: Record<ToolCategory, { title: string; description: 
     description: "Change status, owner, deadline, progress and next action.",
   },
   approval: { title: "Approvals", description: "Decide approval requests waiting on you." },
-  finance: { title: "Bills & payments", description: "Record payments, promises to pay, escalate." },
-  admin: { title: "Workspace control", description: "Archive records and switch active workspace." },
+  finance: {
+    title: "Bills & payments",
+    description: "Record payments, promises to pay, escalate.",
+  },
+  admin: {
+    title: "Workspace control",
+    description: "Archive records and switch active workspace.",
+  },
 };
 
 /** Defaults follow the principle that money and approvals always need a human. */
@@ -61,7 +67,7 @@ export const agentTools = {
       "Headline execution position for a workspace, or all workspaces the user can see: open work, overdue, due today and this week, blocked, completed, on-time delivery rate and outstanding bill value. Call this first for any 'how are we doing' question.",
     inputSchema: z.object({ workspaceId: workspaceEnum.optional() }),
     summarize: (i) => `Read metrics${i["workspaceId"] ? ` for ${s(i["workspaceId"])}` : ""}`,
-    },
+  },
   list_records: {
     category: "read",
     description:
@@ -75,7 +81,8 @@ export const agentTools = {
       query: z.string().optional().describe("Free text on title, next action, details or owner"),
       limit: z.number().int().min(1).max(50).default(15),
     }),
-    summarize: (i) => `List ${s(i["kind"] ?? "records")}${i["state"] && i["state"] !== "all" ? ` (${s(i["state"])})` : ""}`,
+    summarize: (i) =>
+      `List ${s(i["kind"] ?? "records")}${i["state"] && i["state"] !== "all" ? ` (${s(i["state"])})` : ""}`,
   },
   get_record: {
     category: "read",
@@ -153,8 +160,7 @@ export const agentTools = {
   },
   create_meeting_action: {
     category: "create",
-    description:
-      "Turn a meeting or interview outcome into an owned, linked task with a deadline.",
+    description: "Turn a meeting or interview outcome into an owned, linked task with a deadline.",
     inputSchema: z.object({
       meetingId: z.string(),
       title: z.string().min(3),
