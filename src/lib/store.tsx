@@ -229,7 +229,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [db, setDb] = useState<DB>(initialDb);
   const [scope, setScope] = useState<Scope>("group");
   const [currentUserId, setCurrentUserId] = useState("core-essmat");
-  const [activeWorkspace, setActiveWorkspaceState] = useState<WorkspaceId>("core");
+  const [activeWorkspace, setActiveWorkspaceState] = useState<WorkspaceId>("management");
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
@@ -349,7 +349,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const allowed = getWorkspaceIdsForUser(currentUser);
-    if (!allowed.includes(activeWorkspace)) setActiveWorkspaceState(allowed[0] ?? "core");
+    if (!allowed.includes(activeWorkspace)) setActiveWorkspaceState(allowed[0] ?? "management");
   }, [currentUser.id, currentUser.department, currentUser.role, activeWorkspace]);
 
   const setActiveWorkspace = useCallback(

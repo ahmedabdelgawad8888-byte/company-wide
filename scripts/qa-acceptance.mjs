@@ -40,24 +40,24 @@ async function createRecord(ws, module, buttonRe, title) {
 
 // 1. Meeting creation
 const meetingTitle = `QA meeting ${Date.now()}`;
-const m = await createRecord("core", "meeting", /create meeting/i, meetingTitle);
+const m = await createRecord("management", "meeting", /create meeting/i, meetingTitle);
 check("meeting created", m.ok, m.reason ?? "");
 await page.keyboard.press("Escape");
 await page.waitForTimeout(400);
-await page.goto(`${base}/workspaces/core/meeting`, { waitUntil: "networkidle" });
+await page.goto(`${base}/workspaces/management/meeting`, { waitUntil: "networkidle" });
 check("meeting listed", (await page.locator("body").innerText()).includes(meetingTitle));
 
 // 2. Blocker creation and visibility in "what is blocked"
 const blockerTitle = `QA blocker ${Date.now()}`;
-const b = await createRecord("core", "blocker", /create blocker/i, blockerTitle);
+const b = await createRecord("management", "blocker", /create blocker/i, blockerTitle);
 check("blocker created", b.ok, b.reason ?? "");
 await page.keyboard.press("Escape");
 await page.waitForTimeout(400);
-await page.goto(`${base}/workspaces/core/blocker`, { waitUntil: "networkidle" });
+await page.goto(`${base}/workspaces/management/blocker`, { waitUntil: "networkidle" });
 check("blocker listed", (await page.locator("body").innerText()).includes(blockerTitle));
 
 // 3. Approvals page renders decision-focused queue
-await page.goto(`${base}/workspaces/core/approval`, { waitUntil: "networkidle" });
+await page.goto(`${base}/workspaces/management/approval`, { waitUntil: "networkidle" });
 const approvalsText = await page.locator("body").innerText();
 check(
   "approvals page renders",
@@ -65,12 +65,12 @@ check(
 );
 
 // 4. My work answers "what do I need to do"
-await page.goto(`${base}/workspaces/core/my-work`, { waitUntil: "networkidle" });
+await page.goto(`${base}/workspaces/management/my-work`, { waitUntil: "networkidle" });
 const myWork = await page.locator("body").innerText();
 check("my-work renders actionable queue", /overdue|due|next action|today/i.test(myWork));
 
 // 5. Global search finds the created meeting
-await page.goto(`${base}/workspaces/core/home`, { waitUntil: "networkidle" });
+await page.goto(`${base}/workspaces/management/home`, { waitUntil: "networkidle" });
 const paletteBtn = page.getByRole("button", { name: /search priorities/i }).first();
 if (await paletteBtn.count()) {
   await paletteBtn.click();
@@ -91,7 +91,7 @@ if (await paletteBtn.count()) {
 }
 
 // 6. Dark mode toggle does not break the shell
-await page.goto(`${base}/workspaces/core/home`, { waitUntil: "networkidle" });
+await page.goto(`${base}/workspaces/management/home`, { waitUntil: "networkidle" });
 await page.evaluate(() => document.documentElement.classList.add("dark"));
 await page.waitForTimeout(300);
 check("dark mode renders", (await page.locator("body").innerText()).length > 200);

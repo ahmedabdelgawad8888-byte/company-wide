@@ -56,15 +56,13 @@ export function CommandPalette({
         )
       : [];
   const placeholder =
-    activeWorkspace === "core"
-      ? "Search core priorities, blockers, meetings or people…"
-      : activeWorkspace === "sales"
-        ? "Search sales actions, clients, follow-ups or meetings…"
-        : activeWorkspace === "finance"
-          ? "Search bills, collections, payments or finance actions…"
-          : activeWorkspace === "hr"
-            ? "Search people actions, meetings or team members…"
-            : "Search analysis requests, reports, files or delivery dates…";
+    activeWorkspace === "sales"
+      ? "Search sales actions, clients, follow-ups or meetings…"
+      : activeWorkspace === "finance"
+        ? "Search bills, collections, payments or finance actions…"
+        : activeWorkspace === "hr"
+          ? "Search people actions, meetings or team members…"
+          : "Search priorities, blockers, decisions, analysis requests or people…";
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {

@@ -35,7 +35,16 @@ export const extras: Record<string, [string, string]> = {
 export const moduleTitle = (m: string): [string, string] =>
   titles[m as Kind] ?? extras[m] ?? [m, m];
 const work: Record<WorkspaceId, Module[]> = {
-  core: ["project", "decision", "blocker", "task", "meeting", "portfolio"],
+  management: [
+    "project",
+    "decision",
+    "blocker",
+    "request",
+    "data-issue",
+    "task",
+    "meeting",
+    "portfolio",
+  ],
   sales: ["action", "client", "meeting", "quotation", "proposal", "contract", "task"],
   finance: ["bill", "collections", "payment", "task", "meeting", "overdue"],
   hr: [
@@ -48,7 +57,6 @@ const work: Record<WorkspaceId, Module[]> = {
     "task",
     "meeting",
   ],
-  data: ["request", "data-issue", "task", "meeting"],
 };
 export const modulePath = (w: WorkspaceId, m: Module) => `/workspaces/${w}/${m}`;
 export const validModules = (w: WorkspaceId): Module[] => [

@@ -8,7 +8,7 @@ import { useApp } from "../../lib/store";
 import { useLang } from "../../lib/i18n";
 import { getWorkspace, WORKSPACES, type WorkspaceId } from "../../lib/workspace-hub";
 import { useHub, useRecords } from "./provider";
-import { permission, access, executive, manager } from "./service";
+import { permission, access, executive, level, personVisible } from "./service";
 import {
   attentionScore,
   closed,
@@ -30,18 +30,22 @@ import { WorkTable, WorkCalendar, Workload } from "./work-views";
 import { AutomationCenter } from "./automation-center";
 
 const homeTitles: Record<WorkspaceId, [string, string]> = {
-  core: ["Core Team Command Room", "غرفة قيادة الفريق الأساسي"],
+  management: ["Management Command Room", "غرفة قيادة الإدارة"],
   sales: ["My Sales Day", "يومي في المبيعات"],
   finance: ["My Finance Day", "يومي في الحسابات"],
   hr: ["People Operations Today", "عمليات الموظفين اليوم"],
-  data: ["Analysis Queue", "قائمة طلبات التحليل"],
 };
+const levelTitle = (value: "member" | "supervisor" | "lead"): [string, string] =>
+  value === "lead"
+    ? ["Workspace lead", "قائد المساحة"]
+    : value === "supervisor"
+      ? ["Supervisor", "مشرف"]
+      : ["Member", "عضو"];
 const defaultKind: Record<WorkspaceId, Kind> = {
-  core: "project",
+  management: "project",
   sales: "action",
   finance: "bill",
   hr: "people-action",
-  data: "request",
 };
 export function HubPage({
   workspaceId,
@@ -188,10 +192,7 @@ export function HubPage({
       ) : module === "people" ? (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {users
-            .filter(
-              (u) =>
-                access(u, workspaceId) && (!executive(u) || rows.some((r) => r.ownerId === u.id)),
-            )
+            .filter((u) => personVisible(actor, u, workspaceId))
             .map((u) => (
               <article key={u.id} className="rounded-xl border bg-card p-5">
                 <div className="flex items-center gap-3">
@@ -199,10 +200,18 @@ export function HubPage({
                     <Users className="size-5" />
                   </div>
                   <div>
-                    <h2 className="font-semibold">{u.name}</h2>
+                    <h2 className="font-semibold">
+                      {u.name}
+                      {u.id === actor.id && ` · ${t("you", "أنت")}`}
+                    </h2>
                     <p className="text-xs text-muted-foreground">
-                      {u.department} · {u.role}
+                      {u.department} · {u.role} · {t(...levelTitle(level(u)))}
                     </p>
+                    {u.managerId && (
+                      <p className="text-xs text-muted-foreground">
+                        {t("Reports to", "يتبع")} {name(u.managerId)}
+                      </p>
+                    )}
                   </div>
                 </div>
                 <p className="mt-4 text-sm">
@@ -344,9 +353,9 @@ function Home({
 }) {
   const { actor, users } = useHub();
   const { t } = useLang();
-  const focused = manager(actor)
-    ? rows
-    : rows.filter((r) => r.ownerId === actor.id || r.collaborators.includes(actor.id));
+  // `rows` is already scoped by the workspace hierarchy: leads see the whole
+  // workspace, supervisors their reports, members only their own records.
+  const focused = rows;
   const work = focused.filter((r) => !["employee", "client", "file", "payment"].includes(r.kind));
   const attention = [...work]
     .filter((r) => !closed(r))
@@ -465,15 +474,13 @@ function Home({
         </section>
         <section className="rounded-xl border bg-card p-5">
           <h2 className="mb-3 font-semibold">{t("Keep work moving", "حرّك العمل للأمام")}</h2>
-          {(workspaceId === "core"
-            ? ["project", "decision", "blocker"]
-            : workspaceId === "sales"
-              ? ["action", "client", "quotation"]
-              : workspaceId === "finance"
-                ? ["collections", "bill", "payment"]
-                : workspaceId === "hr"
-                  ? ["onboarding", "interview", "people-action"]
-                  : ["request", "data-issue", "reports"]
+          {(workspaceId === "sales"
+            ? ["action", "client", "quotation"]
+            : workspaceId === "finance"
+              ? ["collections", "bill", "payment"]
+              : workspaceId === "hr"
+                ? ["onboarding", "interview", "people-action"]
+                : ["project", "decision", "blocker", "request"]
           ).map((m) => (
             <Link
               key={m}

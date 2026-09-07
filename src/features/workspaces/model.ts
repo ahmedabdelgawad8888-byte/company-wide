@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { WorkspaceId } from "../../lib/workspace-hub";
+import type { WorkspaceId, WorkspaceLevel } from "../../lib/workspace-hub";
 
 export const kinds = [
   "task",
@@ -34,6 +34,14 @@ export type Actor = {
   entityId: string;
   scope: string;
   status: string;
+  /** Home workspace. Falls back to department/role mapping when absent. */
+  workspaceId?: WorkspaceId;
+  /** member | supervisor | lead inside that workspace. */
+  workspaceLevel?: WorkspaceLevel;
+  /** Direct line manager inside the workspace. */
+  managerId?: string;
+  /** Everyone reporting to this person, directly or indirectly. Filled by the provider. */
+  reportIds?: string[];
 };
 export type Field = {
   key: string;
@@ -360,7 +368,17 @@ export const fields: Record<Kind, Field[]> = {
   ],
 };
 export const workspaceKinds: Record<WorkspaceId, Kind[]> = {
-  core: ["project", "decision", "blocker", "task", "meeting", "file", "approval"],
+  management: [
+    "project",
+    "decision",
+    "blocker",
+    "request",
+    "data-issue",
+    "task",
+    "meeting",
+    "file",
+    "approval",
+  ],
   sales: [
     "action",
     "client",
@@ -385,12 +403,11 @@ export const workspaceKinds: Record<WorkspaceId, Kind[]> = {
     "file",
     "approval",
   ],
-  data: ["request", "data-issue", "task", "meeting", "file", "approval"],
 };
 const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use a valid date");
 export const recordSchema = z.object({
   id: z.string(),
-  workspaceId: z.enum(["core", "sales", "finance", "hr", "data"]),
+  workspaceId: z.enum(["management", "sales", "finance", "hr"]),
   kind: z.enum(kinds),
   title: z.string().trim().min(3).max(180),
   description: z.string().max(12000),

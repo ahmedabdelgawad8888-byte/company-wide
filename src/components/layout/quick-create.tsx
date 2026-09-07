@@ -63,7 +63,7 @@ const usableDepartments = (
   currentDepartment: string,
 ) => {
   const configured = getWorkspace(workspaceId).departments.filter(
-    (d) => !["Core Team", "People", "Data", "Business Intelligence", "BI"].includes(d),
+    (d) => !["Core Team", "Executive", "People", "Data", "Business Intelligence", "BI"].includes(d),
   );
   if (
     workspaceOwnsDepartment(workspaceId, currentDepartment) &&

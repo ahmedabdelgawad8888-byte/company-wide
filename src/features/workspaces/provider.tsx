@@ -16,6 +16,25 @@ type HubContext = {
   reload: () => void;
 };
 const Ctx = createContext<HubContext | null>(null);
+/**
+ * Resolves the reporting tree once: every person gets the ids of everyone reporting
+ * to them, directly or further down the line. A supervisor's visibility is built on this.
+ */
+export function withReportIds<T extends { id: string; managerId?: string }>(people: T[]) {
+  const children = new Map<string, string[]>();
+  for (const person of people)
+    if (person.managerId && person.managerId !== person.id)
+      children.set(person.managerId, [...(children.get(person.managerId) ?? []), person.id]);
+  const collect = (id: string, seen = new Set<string>()): string[] => {
+    for (const childId of children.get(id) ?? [])
+      if (!seen.has(childId)) {
+        seen.add(childId);
+        collect(childId, seen);
+      }
+    return [...seen];
+  };
+  return people.map((person) => ({ ...person, reportIds: collect(person.id) }));
+}
 export function HubProvider({ children }: { children: ReactNode }) {
   const { db, currentUser } = useApp();
   const [state, setState] = useState<HubState>(emptyState);
@@ -23,10 +42,9 @@ export function HubProvider({ children }: { children: ReactNode }) {
   const repo = useRef<LocalRepository | null>(null);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState("");
-  const users = db.users.map((u) => ({
-    ...u,
-    role: u.id === "hr-lead" ? "HR Manager" : u.id === "data-lead" ? "Data Analyst" : u.role,
-  }));
+  // Every actor carries the ids of everyone below them in the workspace hierarchy,
+  // so record visibility can be resolved without re-walking the directory each time.
+  const users = withReportIds(db.users);
   const actor = users.find((u) => u.id === currentUser.id) ?? currentUser;
   const initialDb = useRef(db);
   const reload = () => {

@@ -6,7 +6,7 @@ const errs = [];
 p.on("pageerror", (e) => errs.push(String(e)));
 p.on("console", (m) => m.type() === "error" && errs.push(m.text()));
 
-for (const ws of ["core", "sales", "finance", "hr", "data"]) {
+for (const ws of ["management", "sales", "finance", "hr"]) {
   await p.goto(`${base}/workspaces/${ws}/dashboard`, { waitUntil: "networkidle" });
   await p.waitForTimeout(1200);
   const txt = await p.locator("body").innerText();
@@ -26,7 +26,7 @@ for (const ws of ["core", "sales", "finance", "hr", "data"]) {
 }
 
 // preview panel
-await p.goto(`${base}/workspaces/core/task`, { waitUntil: "networkidle" });
+await p.goto(`${base}/workspaces/management/task`, { waitUntil: "networkidle" });
 await p.waitForTimeout(800);
 const row = p.locator("table tbody tr").first();
 await row.click();

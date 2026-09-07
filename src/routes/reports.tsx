@@ -36,9 +36,8 @@ function Reports() {
   const workspace = getWorkspace(activeWorkspace);
   const salesMode = activeWorkspace === "sales";
   const financeMode = activeWorkspace === "finance";
-  const coreMode = activeWorkspace === "core";
+  const managementMode = activeWorkspace === "management";
   const hrMode = activeWorkspace === "hr";
-  const dataMode = activeWorkspace === "data";
 
   const users = db.users.filter(
     (u) =>
@@ -250,20 +249,15 @@ function Reports() {
           "Client activity, commitments and execution quality for the Sales team only.",
           "نشاط العملاء والالتزامات وجودة التنفيذ لفريق المبيعات فقط.",
         )
-      : coreMode
+      : hrMode
         ? t(
-            "Shared-priority health, blockers and ownership across the Core Team functions.",
-            "صحة الأولويات المشتركة والمعوقات وتوزيع المسؤولية داخل وظائف الفريق الأساسي.",
+            "People-action execution, overdue HR work and delivery by owner.",
+            "تنفيذ إجراءات الموظفين والمتأخرات وأداء المسؤولين في الموارد البشرية.",
           )
-        : hrMode
-          ? t(
-              "People-action execution, overdue HR work and delivery by owner.",
-              "تنفيذ إجراءات الموظفين والمتأخرات وأداء المسؤولين في الموارد البشرية.",
-            )
-          : t(
-              "Analysis request health, blocked data work and delivery discipline.",
-              "صحة طلبات التحليل ومهام البيانات المعطلة والالتزام بالتسليم.",
-            );
+        : t(
+            "Shared-priority health, blockers, analysis delivery and ownership across Management.",
+            "صحة الأولويات المشتركة والمعوقات وتسليم التحليلات وتوزيع المسؤولية داخل الإدارة.",
+          );
 
   return (
     <div className="space-y-6">
@@ -369,7 +363,7 @@ function Reports() {
             format={(value) => compactMoney(value, "SAR")}
           />
         </ChartRow>
-      ) : coreMode ? (
+      ) : managementMode ? (
         <ChartRow cols={2}>
           <SeriesBarChartCard
             title={t("Owner action health", "صحة الإجراءات حسب المسؤول")}
@@ -429,8 +423,7 @@ export const Route = createFileRoute("/reports")({
       { title: "Workspace Reports | TryGC Command Center" },
       {
         name: "description",
-        content:
-          "Workspace-specific reporting for TryGC Finance, Sales, Core Team, HR and Data Analysis.",
+        content: "Workspace-specific reporting for TryGC Management, Finance, Sales and HR.",
       },
     ],
   }),

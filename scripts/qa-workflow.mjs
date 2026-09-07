@@ -14,7 +14,7 @@ const check = (n, ok, extra = "") => {
   results.push([n, ok, extra]);
 };
 
-for (const ws of ["core", "sales", "finance", "hr", "data"]) {
+for (const ws of ["management", "sales", "finance", "hr"]) {
   await page.goto(`${base}/workspaces/${ws}/task`, { waitUntil: "networkidle" });
   const btn = page.getByRole("button", { name: /create task/i }).first();
   if (!(await btn.count())) {

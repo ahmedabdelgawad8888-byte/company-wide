@@ -1,4 +1,11 @@
-import { getWorkspaceIdsForUser, type WorkspaceId } from "../../lib/workspace-hub.ts";
+import {
+  getWorkspaceIdsForUser,
+  getWorkspaceLevel,
+  getHomeWorkspace,
+  isAdminUser,
+  type WorkspaceId,
+  type WorkspaceLevel,
+} from "../../lib/workspace-hub.ts";
 import {
   recordSchema,
   fields,
@@ -15,22 +22,52 @@ import {
 } from "./model.ts";
 
 export const id = (prefix = "REC") => `${prefix}-${crypto.randomUUID()}`;
-export const manager = (a: Actor) => /Admin|Management|Manager|Group Finance/.test(a.role);
-export const executive = (a: Actor) => ["Group Admin", "Executive Management"].includes(a.role);
+/** Group Admin / Executive Management: above every workspace, see and steer all four. */
+export const executive = (a: Actor) => isAdminUser(a);
+/** Where this person sits in their own workspace. */
+export const level = (a: Actor): WorkspaceLevel => getWorkspaceLevel(a);
+/** The one workspace this person belongs to. */
+export const homeWorkspace = (a: Actor): WorkspaceId => getHomeWorkspace(a);
+/** Leads run their whole workspace; admins run all of them. */
+export const manager = (a: Actor) => executive(a) || level(a) === "lead";
+/** Supervisors sit between a lead and the members reporting to them. */
+export const supervisor = (a: Actor) => manager(a) || level(a) === "supervisor";
+/** True when the record belongs to this person: owned, created, or shared with them. */
+export const ownWork = (a: Actor, r: WorkRecord) =>
+  r.ownerId === a.id || r.createdBy === a.id || r.collaborators.includes(a.id);
+/** True when the record is owned by somebody reporting to this person. */
+export const reportWork = (a: Actor, r: WorkRecord) =>
+  (a.reportIds ?? []).includes(r.ownerId) || (a.reportIds ?? []).includes(r.createdBy);
 export function access(a: Actor, w: WorkspaceId) {
   return a.status === "active" && getWorkspaceIdsForUser(a).includes(w);
 }
+/**
+ * Record visibility, in one place:
+ * admin      - every record in every workspace
+ * lead       - every record in their own workspace
+ * supervisor - their own records plus their reports'
+ * member     - only their own records
+ */
 export function visible(a: Actor, r: WorkRecord) {
   if (!access(a, r.workspaceId) || r.archived) return false;
+  if (executive(a)) return true;
   if (a.scope === "entity" && a.entityId !== r.entityId) return false;
-  // HR records contain private information. Contributors only see owned/shared records.
-  return (
-    r.workspaceId !== "hr" ||
-    manager(a) ||
-    r.ownerId === a.id ||
-    r.createdBy === a.id ||
-    r.collaborators.includes(a.id)
-  );
+  if (level(a) === "lead") return true;
+  if (level(a) === "supervisor") return ownWork(a, r) || reportWork(a, r);
+  return ownWork(a, r);
+}
+/** Who this person may put work on: themselves, plus their reports (supervisor) or anyone (lead/admin). */
+export function canAssignTo(a: Actor, ownerId: string) {
+  if (ownerId === a.id || manager(a)) return true;
+  return level(a) === "supervisor" && (a.reportIds ?? []).includes(ownerId);
+}
+/** Whether one person's profile card is visible to another inside a workspace. */
+export function personVisible(a: Actor, u: Actor, w: WorkspaceId) {
+  if (!access(u, w)) return false;
+  if (u.id === a.id) return true;
+  if (manager(a)) return true;
+  if (level(a) === "supervisor") return (a.reportIds ?? []).includes(u.id);
+  return u.id === a.managerId;
 }
 export function permission(
   a: Actor,
@@ -41,12 +78,14 @@ export function permission(
   if (!access(a, w) || (r && !visible(a, r))) return false;
   if (action === "view") return true;
   if (a.role === "Viewer") return false;
-  if (action === "administer" || action === "delete" || action === "assign") return manager(a);
+  if (action === "administer" || action === "delete") return manager(a);
+  // Supervisors may hand work to their own reports; leads and admins to anyone.
+  if (action === "assign")
+    return manager(a) || (level(a) === "supervisor" && (!r || reportWork(a, r)));
   if (action === "approve") return !!r && r.ownerId === a.id && r.createdBy !== a.id;
   if (action === "edit")
     return (
-      manager(a) ||
-      (!!r && (r.ownerId === a.id || r.createdBy === a.id || r.collaborators.includes(a.id)))
+      manager(a) || (!!r && (ownWork(a, r) || (level(a) === "supervisor" && reportWork(a, r))))
     );
   return true;
 }
@@ -111,8 +150,14 @@ function validate(s: HubState, a: Actor, d: Draft, users: Actor[], existing?: Wo
     throw new Error("This record type belongs to a different workspace.");
   if (!statuses[d.kind].includes(d.status)) throw new Error("Invalid status for this workflow.");
   if (d.dueDate < d.startDate) throw new Error("Due date must be on or after the start date.");
-  if (d.ownerId !== a.id && (!existing || existing.ownerId !== d.ownerId))
-    requirePermission(a, d.workspaceId, "assign", existing);
+  if (
+    d.ownerId !== a.id &&
+    (!existing || existing.ownerId !== d.ownerId) &&
+    !canAssignTo(a, d.ownerId)
+  )
+    throw new Error(
+      "You can only assign work to yourself or to people who report to you. Ask your workspace lead.",
+    );
   const owner = users.find((u) => u.id === d.ownerId);
   if (!owner || !access(owner, d.workspaceId))
     throw new Error("Select an active owner with workspace access.");
@@ -340,7 +385,8 @@ export function meetingAction(
   requirePermission(a, r.workspaceId, "edit", r);
   if (!["meeting", "interview"].includes(r.kind) || !title.trim() || !dueDate)
     throw new Error("An action, owner and deadline are required.");
-  if (ownerId !== a.id) requirePermission(a, r.workspaceId, "assign", r);
+  if (!canAssignTo(a, ownerId))
+    throw new Error("You can only assign meeting actions to yourself or to your direct reports.");
   if (!users.some((u) => u.id === ownerId && access(u, r.workspaceId)))
     throw new Error("Action owner must have workspace access.");
   const task = generatedTask(

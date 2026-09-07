@@ -49,7 +49,33 @@ const analyst = {
   scope: "group",
   status: "active",
 };
-const users = [admin, sales, hr, analyst];
+// Sales hierarchy: lead -> supervisor -> member, used by the visibility tests below.
+const salesLead = {
+  id: "sales-lead",
+  name: "Sales Lead",
+  role: "Sales Manager",
+  department: "Sales",
+  entityId: "eg",
+  scope: "group",
+  status: "active",
+  workspaceId: "sales",
+  workspaceLevel: "lead",
+  reportIds: ["sales-supervisor", "sales"],
+};
+const salesSupervisor = {
+  id: "sales-supervisor",
+  name: "Sales Supervisor",
+  role: "Community Manager",
+  department: "Sales",
+  entityId: "eg",
+  scope: "group",
+  status: "active",
+  workspaceId: "sales",
+  workspaceLevel: "supervisor",
+  managerId: "sales-lead",
+  reportIds: ["sales"],
+};
+const users = [admin, sales, hr, analyst, salesLead, salesSupervisor];
 const draft = (kind, workspaceId, details = {}, extra = {}) => ({
   kind,
   workspaceId,
@@ -140,7 +166,7 @@ test("meeting commitment creates one linked task even when capture is retried", 
   const m = createRecord(
     s,
     admin,
-    draft("meeting", "core", { startTime: "10:00", endTime: "11:00" }),
+    draft("meeting", "management", { startTime: "10:00", endTime: "11:00" }),
     users,
   );
   const t = meetingAction(s, admin, m.id, "Validate API", "admin", "2026-09-22", users);
@@ -157,7 +183,7 @@ test("meeting time validation prevents impossible schedules", () => {
       createRecord(
         s,
         admin,
-        draft("meeting", "core", { startTime: "12:00", endTime: "11:00" }),
+        draft("meeting", "management", { startTime: "12:00", endTime: "11:00" }),
         users,
       ),
     /end must/,
@@ -198,7 +224,7 @@ test("analysis cannot be delivered without delivery evidence", () => {
     analyst,
     draft(
       "request",
-      "data",
+      "management",
       {
         department: "Operations",
         businessQuestion: "What causes delays?",
@@ -238,7 +264,7 @@ test("permissions prevent cross-workspace reads, writes, private HR access and s
   const a = createRecord(
     s,
     admin,
-    draft("approval", "core", { impact: "Release deadline" }),
+    draft("approval", "management", { impact: "Release deadline" }),
     users,
   );
   assert.throws(() => decide(s, admin, a.id, "Approved", "Accepted"), /Permission denied/);
@@ -284,8 +310,8 @@ test("sales next actions become tasks and comments notify only allowed mentions"
 });
 test("dependencies reject cycles and closing work with unfinished dependencies", () => {
   const s = emptyState();
-  const a = createRecord(s, admin, draft("task", "core"), users);
-  const b = createRecord(s, admin, draft("task", "core", { dependencyId: a.id }), users);
+  const a = createRecord(s, admin, draft("task", "management"), users);
+  const b = createRecord(s, admin, draft("task", "management", { dependencyId: a.id }), users);
   assert.throws(
     () => updateRecord(s, admin, a.id, { ...a, details: { dependencyId: b.id } }, users),
     /cycle/,
@@ -294,10 +320,10 @@ test("dependencies reject cycles and closing work with unfinished dependencies",
 });
 test("automation dry run is safe and live retries are idempotent; unconfigured channels record failure", () => {
   const s = emptyState();
-  createRecord(s, admin, draft("task", "core"), users);
+  createRecord(s, admin, draft("task", "management"), users);
   const rule = {
     id: "rule",
-    workspaceId: "core",
+    workspaceId: "management",
     title: "Due reminder",
     trigger: "due",
     days: 0,
@@ -327,4 +353,86 @@ test("date sweep updates overdue bills and deduplicates personal daily notices",
   const n = s.notifications.length;
   sweep(s, admin, "2026-09-21", "09:00");
   assert.equal(s.notifications.length, n);
+});
+
+test("workspace hierarchy scopes what each level can see", () => {
+  const s = emptyState();
+  const memberWork = createRecord(
+    s,
+    sales,
+    draft("client", "sales", { contact: "Member contact" }, { ownerId: "sales" }),
+    users,
+  );
+  const supervisorWork = createRecord(
+    s,
+    salesSupervisor,
+    draft("client", "sales", { contact: "Supervisor contact" }, { ownerId: "sales-supervisor" }),
+    users,
+  );
+  const leadWork = createRecord(
+    s,
+    salesLead,
+    draft("client", "sales", { contact: "Lead contact" }, { ownerId: "sales-lead" }),
+    users,
+  );
+
+  // Member: only their own record.
+  assert.equal(visible(sales, memberWork), true);
+  assert.equal(visible(sales, supervisorWork), false);
+  assert.equal(visible(sales, leadWork), false);
+
+  // Supervisor: their own plus their reports'.
+  assert.equal(visible(salesSupervisor, memberWork), true);
+  assert.equal(visible(salesSupervisor, supervisorWork), true);
+  assert.equal(visible(salesSupervisor, leadWork), false);
+
+  // Lead: the whole workspace.
+  assert.ok([memberWork, supervisorWork, leadWork].every((r) => visible(salesLead, r)));
+
+  // Admin: every workspace, including the ones they do not belong to.
+  const hrWork = createRecord(
+    s,
+    hr,
+    draft(
+      "employee",
+      "hr",
+      { email: "x@example.invalid", department: "Ops", joinDate: "2026-09-01" },
+      { ownerId: "hr" },
+    ),
+    users,
+  );
+  assert.ok([memberWork, supervisorWork, leadWork, hrWork].every((r) => visible(admin, r)));
+  // ...while nobody outside HR sees HR records.
+  assert.equal(visible(salesLead, hrWork), false);
+});
+
+test("assignment follows the hierarchy: members assign only to themselves", () => {
+  const s = emptyState();
+  assert.throws(
+    () =>
+      createRecord(
+        s,
+        sales,
+        draft("client", "sales", { contact: "X" }, { ownerId: "sales-lead" }),
+        users,
+      ),
+    /assign work to yourself/,
+  );
+  // A supervisor may assign to a direct report; a lead to anyone in the workspace.
+  assert.ok(
+    createRecord(
+      s,
+      salesSupervisor,
+      draft("client", "sales", { contact: "Y" }, { ownerId: "sales" }),
+      users,
+    ).id,
+  );
+  assert.ok(
+    createRecord(
+      s,
+      salesLead,
+      draft("client", "sales", { contact: "Z" }, { ownerId: "sales-supervisor" }),
+      users,
+    ).id,
+  );
 });

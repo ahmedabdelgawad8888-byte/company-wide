@@ -1,12 +1,12 @@
 # QA Summary — TryGC Workspace Hub
 
-Last verified: 2026-09-06, on a live dev server at `http://127.0.0.1:5173`.
+Last verified: 2026-09-08 (four-workspace edition), on a live dev server at `http://127.0.0.1:5173`.
 
 ## Automated gates (all green)
 
 | Gate                  | Command                | Result                                                |
 | --------------------- | ---------------------- | ----------------------------------------------------- |
-| Unit / workflow logic | `npm test`             | **40 / 40 passed**                                    |
+| Unit / workflow logic | `npm test`             | **44 / 44 passed**                                    |
 | TypeScript            | `npm run typecheck`    | **0 errors**                                          |
 | Lint / format         | `npm run lint`         | **0 errors** (23 pre-existing react-refresh warnings) |
 | Production build      | `BUILD_PRODUCTION.bat` | **passed** (client + SSR + Nitro)                     |
@@ -19,17 +19,18 @@ Run with real Chrome via Playwright against the dev server. Three suites:
 ### `npm run qa:smoke` — navigation integrity
 
 Crawls every sidebar route and asserts HTTP 200 plus no "page not found" body.
-All routes across the five workspaces pass:
+All routes across the four workspaces pass:
 
-- Core Team — 18 routes
-- Sales — 19 routes
-- Finance — 18 routes
-- HR — 20 routes
-- Data Analysis — 16 routes
+- Management — 24 routes
+- Sales — 23 routes
+- Finance — 22 routes
+- HR — 24 routes
+
+Total: 93 / 93 routes returned 200 with no "page not found" body and 0 console errors.
 
 ### `npm run qa:workflow` — record lifecycle, per workspace
 
-For each of the five workspaces:
+For each of the four workspaces:
 
 1. Open **Create Task** dialog.
 2. Fill required fields (Title, Due date, Next action).
@@ -61,11 +62,21 @@ Verifies the questions the product must answer at any moment:
 - Dependencies reject cycles and block closing work with open dependencies.
 - Automation dry runs are safe; live retries idempotent; failures recorded.
 - Role-scoped calendars, notifications, exception queues, and activity feeds.
+- Workspace hierarchy: a member sees only their own records, a supervisor their own
+  plus their direct reports', a lead the whole workspace, an admin all four workspaces.
+- Assignment follows the same line: members assign only to themselves, supervisors to
+  their reports, leads across their workspace.
 
 ## Known non-blocking items
 
-- 23 ESLint warnings, all `react-refresh/only-export-components` and
+- 29 ESLint warnings, all `react-refresh/only-export-components` and
   `react-hooks/exhaustive-deps` in pre-existing shared UI files. No runtime impact.
+- `qa:workflow`'s "detail drawer opens on new record" assertion fails in all workspaces.
+  This is pre-existing (verified against the previous commit): after saving, the record
+  detail renders as a page rather than a `role="dialog"`, so the assertion never matched.
+  Record creation, listing and persistence all pass.
+- On a full page reload the demo user resets to Ahmed Essmat (Group Admin); the
+  "Switch demo user" selection is React state and is not persisted.
 
 ## Windows path caveat
 

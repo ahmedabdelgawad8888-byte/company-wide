@@ -43,7 +43,7 @@ export const defaultPolicies: Record<ToolCategory, ToolPolicy> = {
   admin: "blocked",
 };
 
-const workspaceEnum = z.enum(["core", "sales", "finance", "hr", "data"]);
+const workspaceEnum = z.enum(["management", "sales", "finance", "hr"]);
 const kindEnum = z.enum(kinds);
 const priorityEnum = z.enum(["Low", "Medium", "High", "Critical"]);
 

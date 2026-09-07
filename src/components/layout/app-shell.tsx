@@ -57,11 +57,10 @@ import {
 } from "@/lib/workspace-hub";
 
 const QUICK_CREATE_BY_WORKSPACE: Record<WorkspaceId, QuickCreateKind[]> = {
-  core: ["project", "task", "meeting", "decision", "blocker"],
+  management: ["project", "task", "meeting", "decision", "blocker", "request", "data-issue"],
   sales: ["action", "client", "meeting", "task"],
   finance: ["bill", "payment", "task", "meeting"],
   hr: ["employee", "people-action", "interview", "onboarding", "task", "meeting"],
-  data: ["request", "data-issue", "task", "meeting"],
 };
 
 function workspaceSearchText(workspaceId: WorkspaceId, t: (en: string, ar: string) => string) {
@@ -80,14 +79,9 @@ function workspaceSearchText(workspaceId: WorkspaceId, t: (en: string, ar: strin
       "Search people, onboarding, meetings and HR actions…",
       "ابحث عن الموظفين والتعيين والاجتماعات وإجراءات الموارد البشرية…",
     );
-  if (workspaceId === "data")
-    return t(
-      "Search analysis requests, reports, files and deadlines…",
-      "ابحث عن طلبات التحليل والتقارير والملفات والمواعيد…",
-    );
   return t(
-    "Search priorities, blockers, decisions, people and actions…",
-    "ابحث عن الأولويات والمعوقات والقرارات والأشخاص والإجراءات…",
+    "Search priorities, blockers, decisions, analysis requests and people…",
+    "ابحث عن الأولويات والمعوقات والقرارات وطلبات التحليل والأشخاص…",
   );
 }
 
@@ -109,11 +103,9 @@ function notificationMatchesWorkspace(
     );
   if (workspaceId === "hr")
     return /hr|people|employee|onboarding|interview|attendance|payroll|hiring/.test(text);
-  if (workspaceId === "data")
-    return /data|analysis|report|insight|dataset|reconciliation|dashboard/.test(text);
   return (
     notification.category === "System" ||
-    /core|technology|automation|operations|blocker|development|ui\/ux|business analysis|webhook|api|db/.test(
+    /core|technology|automation|operations|blocker|development|ui\/ux|business analysis|webhook|api|db|data|analysis|report|insight|dataset|dashboard/.test(
       text,
     )
   );

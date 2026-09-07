@@ -1,24 +1,30 @@
 # TryGC Workspace Hub
 
-A workspace-first operating hub for TryGC. The UI/design system from the provided Trygc Command Center is preserved; the product structure is reorganized around five focused workspaces instead of a global Finance/Sales-heavy menu.
+A workspace-first operating hub for TryGC. The UI/design system from the provided Trygc Command Center is preserved; the product structure is reorganized around four focused workspaces instead of a global Finance/Sales-heavy menu.
 
 ## Workspaces
 
-### 1) Core Team
+Every person belongs to **exactly one** workspace. Only Management (Group Admin /
+Executive Management) sees all four. See `WORKSPACE_GUIDE.md` for the full model.
 
-A shared command room for cross-functional execution.
+### 1) Management (admins & leadership)
 
-Core seed team:
+The admin command room, with full visibility over every other workspace.
 
-- Ahmed Essmat — Technology
+Seed team:
+
+- Ahmed Abdelgawad — Management (Group Admin)
+- Rana Al-Otaibi — Management (Executive Management)
+- Ahmed Essmat — Technology (Group Admin)
 - Amr — Operations
 - Alaa — Business Analysis
 - Abdel Fattah — IT
 - Sabry — IT & Automation
 - Ahmed Ismail — Development
 - Ahmed — UI/UX
+- Data Analysis Lead — Data Analysis
 
-Core flow: shared priorities → blockers → decisions/meetings → owned actions → due dates → activity/automation review.
+Management flow: shared priorities → blockers → decisions/meetings → owned actions → due dates → analysis requests → activity/automation review.
 
 ### 2) Sales
 
@@ -36,9 +42,18 @@ Finance flow: bill → pre-due reminders → collection action → payment/promi
 
 People actions, directory, interviews/meetings, HR calendar and people reporting.
 
-### 5) Data Analysis
+## Role hierarchy
 
-Analysis requests, blocked-data work, report delivery, data files, delivery calendar and insight reporting.
+Inside each workspace there are three levels, and visibility follows them:
+
+- **Member** — sees only records they own, created, or collaborate on.
+- **Supervisor** — sees their own records plus everything owned by their direct reports.
+- **Workspace lead** — sees every record in their own workspace.
+- **Management / Admin** — sees every record in all four workspaces.
+
+Assignment follows the same line: members assign only to themselves, supervisors to
+their reports, leads across their workspace, admins anywhere. A person's workspace and
+level are set on their user record (`workspaceId`, `workspaceLevel`, `managerId`).
 
 ## UX behavior
 
@@ -48,9 +63,9 @@ Analysis requests, blocked-data work, report delivery, data files, delivery cale
 - Global Search searches only the current workspace context.
 - Tasks, Meetings, Calendar and Reports automatically scope themselves to the selected workspace.
 - HR People Directory is directory-first, not chart-heavy.
-- Data Files shows Data Analysis working files only.
+- Files & Data shows Management working files and analysis outputs.
 - Notifications are filtered by workspace intent.
-- Core Team prioritizes blockers and shared ownership rather than financial KPIs.
+- Management prioritizes blockers and shared ownership rather than financial KPIs.
 
 ## Run locally
 

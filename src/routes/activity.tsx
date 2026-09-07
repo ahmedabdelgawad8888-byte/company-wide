@@ -16,7 +16,7 @@ function ActivityFeed() {
   );
   const moduleMatches = (module: string) => {
     const value = module.toLowerCase();
-    if (activeWorkspace === "core")
+    if (activeWorkspace === "management")
       return [
         "core",
         "automation",
@@ -26,9 +26,12 @@ function ActivityFeed() {
         "it",
         "development",
         "business",
+        "data",
+        "analysis",
+        "report",
+        "insight",
+        "bi",
       ].some((x) => value.includes(x));
-    if (activeWorkspace === "data")
-      return ["data", "analysis", "report", "insight", "bi"].some((x) => value.includes(x));
     return false;
   };
   const rows = inScope(db.activities).filter(
@@ -90,22 +93,11 @@ function ActivityFeed() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title={
-          activeWorkspace === "data"
-            ? t("Data Activity", "نشاط البيانات")
-            : t("Core Team Activity & Changes", "نشاط وتغييرات الفريق الأساسي")
-        }
-        subtitle={
-          activeWorkspace === "data"
-            ? t(
-                "A focused trace of analysis delivery, report changes and data-quality actions. Commercial and Finance noise is intentionally hidden.",
-                "سجل مركز لتسليمات التحليل وتغييرات التقارير وإجراءات جودة البيانات مع إخفاء التفاصيل غير المرتبطة.",
-              )
-            : t(
-                "Use this timeline to understand what changed across technology, automation, operations and cross-team priorities before the next decision.",
-                "استخدم هذا الخط الزمني لفهم ما تغير في التكنولوجيا والأتمتة والعمليات والأولويات المشتركة قبل القرار التالي.",
-              )
-        }
+        title={t(`${workspace.title} Activity & Changes`, `نشاط وتغييرات ${workspace.titleAr}`)}
+        subtitle={t(
+          "Use this timeline to understand what changed across technology, automation, operations, analysis and cross-team priorities before the next decision.",
+          "استخدم هذا الخط الزمني لفهم ما تغير في التكنولوجيا والأتمتة والعمليات والتحليل والأولويات المشتركة قبل القرار التالي.",
+        )}
       />
       <div className="grid gap-3 sm:grid-cols-3">
         <Stat label={t("Relevant events", "الأحداث المرتبطة")} value={String(rows.length)} />
@@ -154,7 +146,7 @@ export const Route = createFileRoute("/activity")({
       { title: "Workspace Activity | TryGC Workspace Hub" },
       {
         name: "description",
-        content: "Workspace-specific activity history for Core Team and Data Analysis.",
+        content: "Workspace-specific activity history for the Management workspace.",
       },
     ],
   }),

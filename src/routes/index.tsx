@@ -15,8 +15,7 @@ export const Route = createFileRoute("/")({
       { title: "TryGC Workspace Hub" },
       {
         name: "description",
-        content:
-          "TryGC workspace-first operating hub for Core Team, Finance, Sales, HR and Data Analysis.",
+        content: "TryGC workspace-first operating hub for Management, Finance, Sales and HR.",
       },
     ],
   }),

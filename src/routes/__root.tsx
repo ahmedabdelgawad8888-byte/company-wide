@@ -93,7 +93,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "The TryGC workspace-first operating environment for Core Team, Finance, Sales, HR and Data Analysis.",
+          "The TryGC workspace-first operating environment for Management, Finance, Sales and HR.",
       },
       { name: "author", content: "TryGC" },
       { name: "theme-color", content: "#0b0b0f" },
@@ -101,7 +101,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         property: "og:description",
         content:
-          "Five focused workspaces for cross-functional execution, Finance, Sales, HR and Data Analysis at TryGC.",
+          "Four focused workspaces at TryGC: Management, Finance, Sales and HR, each with its own role hierarchy.",
       },
       { property: "og:type", content: "website" },
       { property: "og:image", content: "/android-chrome-512x512.png" },

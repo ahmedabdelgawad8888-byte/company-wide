@@ -4,7 +4,7 @@ import type { WorkspaceId } from "../lib/workspace-hub";
 function Page() {
   const { workspace, _splat } = Route.useParams();
   const [module, recordId] = (_splat ?? "dashboard").split("/");
-  if (!["core", "sales", "finance", "hr", "data"].includes(workspace))
+  if (!["management", "sales", "finance", "hr"].includes(workspace))
     return <p>Workspace not found.</p>;
   return (
     <HubPage

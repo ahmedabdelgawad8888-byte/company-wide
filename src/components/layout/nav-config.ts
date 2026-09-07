@@ -80,4 +80,4 @@ export function getWorkspaceNavGroups(workspaceId: WorkspaceId): NavGroup[] {
 }
 
 // Kept as a compatibility export for any older imports; the app shell uses getWorkspaceNavGroups().
-export const navGroups: NavGroup[] = getWorkspaceNavGroups("core");
+export const navGroups: NavGroup[] = getWorkspaceNavGroups("management");

@@ -1,4 +1,15 @@
-export type WorkspaceId = "core" | "sales" | "finance" | "hr" | "data";
+export type WorkspaceId = "management" | "sales" | "finance" | "hr";
+
+/**
+ * Position inside a workspace. Visibility widens as the level rises:
+ * member     - only records they own, created or collaborate on
+ * supervisor - the above plus everything owned by their direct reports
+ * lead       - every record in their own workspace
+ * Group Admin / Executive Management sit above all four workspaces.
+ */
+export type WorkspaceLevel = "member" | "supervisor" | "lead";
+
+export const WORKSPACE_IDS: WorkspaceId[] = ["management", "sales", "finance", "hr"];
 
 export interface WorkspaceNavItem {
   to: string;
@@ -28,25 +39,27 @@ export interface WorkspaceDefinition {
 }
 
 const WORKSPACE_NAV: Record<WorkspaceId, WorkspaceNavGroup[]> = {
-  core: [
+  management: [
     {
-      label: "Core Team",
-      labelAr: "الفريق الأساسي",
+      label: "Management",
+      labelAr: "الإدارة",
       items: [
-        { to: "/workspace", label: "Core Team Home", labelAr: "الرئيسية" },
+        { to: "/workspace", label: "Management Home", labelAr: "الرئيسية" },
         { to: "/tasks", label: "Shared Priorities", labelAr: "الأولويات المشتركة", badge: "tasks" },
         { to: "/meetings", label: "Decisions & Meetings", labelAr: "القرارات والاجتماعات" },
         { to: "/overdue", label: "Blockers & Overdue", labelAr: "المعوقات والمتأخرات" },
-        { to: "/calendar", label: "Team Calendar", labelAr: "تقويم الفريق" },
+        { to: "/calendar", label: "Management Calendar", labelAr: "تقويم الإدارة" },
       ],
     },
     {
-      label: "Technology & Control",
-      labelAr: "التكنولوجيا والمتابعة",
+      label: "Control & Insight",
+      labelAr: "المتابعة والتحليل",
       items: [
         { to: "/admin/automations", label: "Automation Center", labelAr: "مركز الأتمتة" },
+        { to: "/admin/users", label: "People & Access", labelAr: "الأشخاص والصلاحيات" },
         { to: "/activity", label: "Activity & Changes", labelAr: "النشاط والتغييرات" },
-        { to: "/reports", label: "Core Team Reports", labelAr: "تقارير الفريق الأساسي" },
+        { to: "/reports", label: "Group Reports", labelAr: "تقارير المجموعة" },
+        { to: "/files", label: "Files & Data", labelAr: "الملفات والبيانات" },
       ],
     },
   ],
@@ -94,36 +107,24 @@ const WORKSPACE_NAV: Record<WorkspaceId, WorkspaceNavGroup[]> = {
       ],
     },
   ],
-  data: [
-    {
-      label: "Data Analysis Workspace",
-      labelAr: "مساحة تحليل البيانات",
-      items: [
-        { to: "/workspace", label: "Data Home", labelAr: "الرئيسية" },
-        { to: "/tasks", label: "Analysis Queue", labelAr: "قائمة التحليلات", badge: "tasks" },
-        { to: "/reports", label: "Reports & Insights", labelAr: "التقارير والتحليلات" },
-        { to: "/files", label: "Data Files", labelAr: "ملفات البيانات" },
-        { to: "/calendar", label: "Delivery Calendar", labelAr: "تقويم التسليمات" },
-        { to: "/activity", label: "Data Activity", labelAr: "نشاط البيانات" },
-      ],
-    },
-  ],
 };
 
 export const WORKSPACES: WorkspaceDefinition[] = [
   {
-    id: "core",
-    title: "Core Team",
-    titleAr: "الفريق الأساسي",
-    shortTitle: "Core",
-    shortTitleAr: "Core",
+    id: "management",
+    title: "Management",
+    titleAr: "الإدارة",
+    shortTitle: "Management",
+    shortTitleAr: "الإدارة",
     description:
-      "One shared command room for cross-functional priorities, blockers, decisions, technology and operations follow-through.",
+      "The admin and leadership workspace: cross-team priorities, blockers, decisions, approvals, analysis requests, automation and full visibility over Sales, Finance and HR.",
     descriptionAr:
-      "مساحة موحدة لأولويات الفريق الأساسي والمعوقات والقرارات ومتابعة التكنولوجيا والعمليات.",
-    purpose: "Align the people who unblock the company.",
-    purposeAr: "توحيد الفريق المسؤول عن إزالة المعوقات وتحريك الشركة.",
+      "مساحة الإدارة والمشرفين: الأولويات المشتركة والمعوقات والقرارات والموافقات وطلبات التحليل والأتمتة مع رؤية كاملة على المبيعات والحسابات والموارد البشرية.",
+    purpose: "See every workspace, decide fast and unblock the company.",
+    purposeAr: "رؤية كل المساحات واتخاذ القرار بسرعة وإزالة المعوقات.",
     departments: [
+      "Management",
+      "Executive",
       "Core Team",
       "Technology",
       "IT",
@@ -131,8 +132,13 @@ export const WORKSPACES: WorkspaceDefinition[] = [
       "Business Analysis",
       "Development",
       "UI/UX",
+      "Quality",
+      "Data",
+      "Data Analysis",
+      "Business Intelligence",
+      "BI",
     ],
-    nav: WORKSPACE_NAV.core,
+    nav: WORKSPACE_NAV.management,
   },
   {
     id: "sales",
@@ -146,7 +152,7 @@ export const WORKSPACES: WorkspaceDefinition[] = [
       "المتابعات اليومية والاجتماعات والتزامات العملاء وأداء فريق المبيعات بدون تعقيد CRM.",
     purpose: "Make every client next action visible and owned.",
     purposeAr: "كل خطوة تالية مع العميل تكون واضحة ولها مسؤول.",
-    departments: ["Sales"],
+    departments: ["Sales", "Community"],
     nav: WORKSPACE_NAV.sales,
   },
   {
@@ -177,31 +183,52 @@ export const WORKSPACES: WorkspaceDefinition[] = [
     departments: ["HR", "People"],
     nav: WORKSPACE_NAV.hr,
   },
-  {
-    id: "data",
-    title: "Data Analysis",
-    titleAr: "تحليل البيانات",
-    shortTitle: "Data",
-    shortTitleAr: "البيانات",
-    description:
-      "Analysis requests, report delivery, data quality follow-ups and recurring insight production.",
-    descriptionAr: "طلبات التحليل وتسليم التقارير ومتابعة جودة البيانات وإنتاج التحليلات الدورية.",
-    purpose: "Make analysis requests measurable from intake to delivery.",
-    purposeAr: "تتبع طلبات التحليل من الاستلام حتى التسليم بشكل واضح.",
-    departments: ["Data", "Data Analysis", "Business Intelligence", "BI"],
-    nav: WORKSPACE_NAV.data,
-  },
 ];
 
-const CORE_MEMBER_IDS = new Set([
-  "core-essmat",
-  "core-amr",
-  "core-alaa",
-  "core-abdelfattah",
-  "core-sabry",
-  "core-ismaiel",
-  "core-uiux",
-]);
+/** Roles that sit above every workspace and see all four of them. */
+const ADMIN_ROLES = new Set(["Group Admin", "Executive Management"]);
+
+/** Fallback level when a user record carries no explicit workspaceLevel. */
+const LEVEL_BY_ROLE: Record<string, WorkspaceLevel> = {
+  "Group Admin": "lead",
+  "Executive Management": "lead",
+  "Group Finance": "lead",
+  "Sales Manager": "lead",
+  "HR Manager": "lead",
+  "Operations Manager": "lead",
+  "Community Manager": "supervisor",
+  "Queue Manager": "supervisor",
+  "IT Admin": "supervisor",
+  "Branch Accountant": "member",
+  "Account Manager": "member",
+  "Community Specialist": "member",
+  "Operations Specialist": "member",
+  "HR Specialist": "member",
+  "Data Analyst": "member",
+  Quality: "member",
+  Viewer: "member",
+};
+
+/** Fallback home workspace when neither an explicit workspaceId nor a department matches. */
+const WORKSPACE_BY_ROLE: Record<string, WorkspaceId> = {
+  "Group Finance": "finance",
+  "Branch Accountant": "finance",
+  "Sales Manager": "sales",
+  "Account Manager": "sales",
+  "Community Manager": "sales",
+  "Community Specialist": "sales",
+  "HR Manager": "hr",
+  "HR Specialist": "hr",
+};
+
+export interface WorkspaceUserLike {
+  id: string;
+  department?: string;
+  role?: string;
+  workspaceId?: WorkspaceId;
+  workspaceLevel?: WorkspaceLevel;
+  managerId?: string;
+}
 
 export function getWorkspace(id: WorkspaceId): WorkspaceDefinition {
   return WORKSPACES.find((workspace) => workspace.id === id) ?? WORKSPACES[0]!;
@@ -218,29 +245,37 @@ export function workspaceOwnsDepartment(id: WorkspaceId, department?: string): b
   );
 }
 
-export function getWorkspaceIdsForUser(user: {
-  id: string;
-  department?: string;
-  role?: string;
-}): WorkspaceId[] {
-  if (user.role === "Group Admin" || user.role === "Executive Management")
-    return ["core", "sales", "finance", "hr", "data"];
-
-  const matches = WORKSPACES.filter((workspace) =>
-    workspaceOwnsDepartment(workspace.id, user.department),
-  ).map((workspace) => workspace.id);
-  if (CORE_MEMBER_IDS.has(user.id) && !matches.includes("core")) matches.unshift("core");
-  if (matches.length) return matches;
-  if (user.role === "Group Finance" || user.role === "Branch Accountant") return ["finance"];
-  if (user.role === "Sales Manager" || user.role === "Account Manager") return ["sales"];
-  if (user.role === "IT Admin") return ["core"];
-  return ["core"];
+export function isAdminUser(user: WorkspaceUserLike): boolean {
+  return ADMIN_ROLES.has(user.role ?? "");
 }
 
-export function userCanAccessWorkspace(
-  user: { id: string; department?: string; role?: string },
-  workspaceId: WorkspaceId,
-): boolean {
+/** The single workspace a person belongs to. Admins are homed in Management. */
+export function getHomeWorkspace(user: WorkspaceUserLike): WorkspaceId {
+  if (user.workspaceId && WORKSPACE_IDS.includes(user.workspaceId)) return user.workspaceId;
+  if (isAdminUser(user)) return "management";
+  const byDepartment = WORKSPACES.find((workspace) =>
+    workspaceOwnsDepartment(workspace.id, user.department),
+  );
+  if (byDepartment) return byDepartment.id;
+  return WORKSPACE_BY_ROLE[user.role ?? ""] ?? "management";
+}
+
+export function getWorkspaceLevel(user: WorkspaceUserLike): WorkspaceLevel {
+  if (user.workspaceLevel) return user.workspaceLevel;
+  if (isAdminUser(user)) return "lead";
+  return LEVEL_BY_ROLE[user.role ?? ""] ?? "member";
+}
+
+/**
+ * Workspaces a person may open. Everyone belongs to exactly one workspace;
+ * only Group Admin / Executive Management see all four.
+ */
+export function getWorkspaceIdsForUser(user: WorkspaceUserLike): WorkspaceId[] {
+  if (isAdminUser(user)) return [...WORKSPACE_IDS];
+  return [getHomeWorkspace(user)];
+}
+
+export function userCanAccessWorkspace(user: WorkspaceUserLike, workspaceId: WorkspaceId): boolean {
   return getWorkspaceIdsForUser(user).includes(workspaceId);
 }
 

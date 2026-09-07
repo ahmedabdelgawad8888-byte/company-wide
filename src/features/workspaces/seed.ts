@@ -167,7 +167,7 @@ export function seedHub(db: {
   projects.forEach((title, i) => {
     const r = add(
       "project",
-      "core",
+      "management",
       title,
       owners[i] ?? "core-essmat",
       {
@@ -186,7 +186,7 @@ export function seedHub(db: {
   const p = s.records.find((r) => r.kind === "project" && r.title === "API Health");
   add(
     "blocker",
-    "core",
+    "management",
     "API response validation is blocking release",
     "core-essmat",
     {
@@ -199,7 +199,7 @@ export function seedHub(db: {
   );
   add(
     "decision",
-    "core",
+    "management",
     "Choose the reporting release sequence",
     "core-amr",
     {
@@ -250,8 +250,17 @@ export function seedHub(db: {
     "To Do",
   );
   add(
+    "people-action",
+    "hr",
+    "Collect probation review form",
+    "hr-specialist",
+    { employeeId: emp.id, category: "Probation review" },
+    3,
+    "To Do",
+  );
+  add(
     "request",
-    "data",
+    "management",
     "Weekly delivery performance report",
     "data-lead",
     {
@@ -267,7 +276,7 @@ export function seedHub(db: {
   );
   add(
     "data-issue",
-    "data",
+    "management",
     "Missing owner mapping in reporting source",
     "data-lead",
     {

@@ -246,24 +246,20 @@ function Meetings() {
     <div className="space-y-6">
       <PageHeader
         title={t(
-          activeWorkspace === "core"
-            ? "Decisions & Meetings"
-            : activeWorkspace === "sales"
-              ? "Client Meetings"
-              : activeWorkspace === "finance"
-                ? "Finance Meetings"
-                : activeWorkspace === "hr"
-                  ? "Interviews & People Meetings"
-                  : "Analysis Reviews & Meetings",
-          activeWorkspace === "core"
-            ? "القرارات والاجتماعات"
-            : activeWorkspace === "sales"
-              ? "اجتماعات العملاء"
-              : activeWorkspace === "finance"
-                ? "اجتماعات الحسابات"
-                : activeWorkspace === "hr"
-                  ? "المقابلات واجتماعات الموظفين"
-                  : "اجتماعات مراجعة التحليلات",
+          activeWorkspace === "sales"
+            ? "Client Meetings"
+            : activeWorkspace === "finance"
+              ? "Finance Meetings"
+              : activeWorkspace === "hr"
+                ? "Interviews & People Meetings"
+                : "Decisions & Meetings",
+          activeWorkspace === "sales"
+            ? "اجتماعات العملاء"
+            : activeWorkspace === "finance"
+              ? "اجتماعات الحسابات"
+              : activeWorkspace === "hr"
+                ? "المقابلات واجتماعات الموظفين"
+                : "القرارات والاجتماعات",
         )}
         subtitle={t(
           `Meetings inside ${workspace.title} should end with a clear outcome. If something must happen next, assign one owner and one due date before leaving the record.`,

@@ -1,3 +1,5 @@
+import type { WorkspaceId, WorkspaceLevel } from "./workspace-hub.ts";
+
 export type CountryCode = "SA" | "EG" | "AE" | "KW" | "QA" | "BH";
 export type Currency = "SAR" | "EGP" | "AED" | "KWD" | "QAR" | "BHD";
 
@@ -35,6 +37,12 @@ export interface User {
   scope: "group" | "entity";
   status: "active" | "suspended" | "offboarding";
   lastLogin: string;
+  /** The single workspace this person belongs to. Admins still see all four. */
+  workspaceId: WorkspaceId;
+  /** Position in that workspace's hierarchy: member, supervisor or lead. */
+  workspaceLevel: WorkspaceLevel;
+  /** Who this person reports to inside the workspace. Empty for a workspace lead. */
+  managerId?: string;
 }
 
 export type RoleName =
@@ -49,6 +57,9 @@ export type RoleName =
   | "Operations Manager"
   | "Queue Manager"
   | "Operations Specialist"
+  | "HR Manager"
+  | "HR Specialist"
+  | "Data Analyst"
   | "Quality"
   | "IT Admin"
   | "Viewer";

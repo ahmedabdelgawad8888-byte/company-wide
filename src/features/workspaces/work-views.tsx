@@ -6,7 +6,7 @@ import { DataTable, type Column } from "../../components/data-table";
 import { useLang } from "../../lib/i18n";
 import type { WorkspaceId } from "../../lib/workspace-hub";
 import { useHub } from "./provider";
-import { id, manager, permission, updateRecord } from "./service";
+import { id, manager, supervisor, permission, updateRecord } from "./service";
 import { closed, dayOffset, overdue, statuses, today, titles, type WorkRecord } from "./model";
 import { control } from "./record-form";
 
@@ -25,7 +25,8 @@ export function WorkTable({
   const { t } = useLang();
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("all");
-  const [owner, setOwner] = useState(manager(actor) ? "all" : actor.id);
+  // Leads and supervisors open on their full scope; members open on their own work.
+  const [owner, setOwner] = useState(supervisor(actor) ? "all" : actor.id);
   const [view, setView] = useState("Table");
   const [savedName, setSavedName] = useState("");
   const [saving, setSaving] = useState(false);
