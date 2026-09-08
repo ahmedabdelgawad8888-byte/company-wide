@@ -1,8 +1,9 @@
-import { useMemo, useRef, useState, type ChangeEvent, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import {
   Bot,
   Download,
+  FileSpreadsheet,
   FileText,
   PanelRightClose,
   PanelRightOpen,
@@ -30,18 +31,16 @@ import {
 } from "../features/agent/agent-setup-card";
 import {
   downloadHtml,
+  exportConversationCsv,
   printConversation,
   type ExportMessage,
 } from "../features/agent/agent-export";
 import { AgentMessageRenderer, parseAgentMessage } from "../features/agent/agent-blocks";
+import { AgentHistory } from "../features/agent/agent-history";
+import { useConversations, type AgentMessage } from "../features/agent/use-conversations";
 
 type Attachment = { name: string; content: string; size: number };
-type Message = {
-  role: "user" | "assistant";
-  content: string;
-  displayContent?: string;
-  attachments?: string[];
-};
+type Message = AgentMessage;
 
 function AgentPage() {
   const settings = useAgentSettings();
@@ -51,12 +50,21 @@ function AgentPage() {
   const rows = useRecords().filter((record) => record.workspaceId === activeWorkspace);
   const workspace = getWorkspace(activeWorkspace);
   const readiness = useAgentReadiness();
+  const history = useConversations(actor.id);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Switching accounts must not carry one person's transcript into another's
+  // history, so the open thread resets with the acting user.
+  useEffect(() => {
+    setMessages([]);
+    setAttachments([]);
+    setError(null);
+  }, [actor.id]);
 
   const context = useMemo(
     () =>
@@ -106,7 +114,9 @@ function AgentPage() {
       const payload = (await response.json()) as { text?: string; error?: string };
       if (!response.ok || !payload.text)
         throw new Error(payload.error ?? "The agent did not return an answer.");
-      setMessages([...next, { role: "assistant", content: payload.text }]);
+      const settled: Message[] = [...next, { role: "assistant", content: payload.text }];
+      setMessages(settled);
+      history.save(settled, { provider: settings.provider.name, model: settings.modelId });
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "The agent request failed.");
     } finally {
@@ -177,7 +187,23 @@ function AgentPage() {
     );
   };
 
-  const exportMessages: ExportMessage[] = messages.map((message, index) => {
+  const startNewConversation = () => {
+    history.startNew();
+    setMessages([]);
+    setAttachments([]);
+    setError(null);
+  };
+
+  const openConversation = (id: string) => {
+    const conversation = history.open(id);
+    if (!conversation) return;
+    setMessages(conversation.messages);
+    setAttachments([]);
+    setError(null);
+    setShowSidebar(true);
+  };
+
+  const toExportMessage = (message: Message, index: number): ExportMessage => {
     if (message.role === "user") {
       return {
         id: `message-${index}`,
@@ -219,12 +245,25 @@ function AgentPage() {
       role: "assistant",
       parts,
     };
-  });
+  };
+
+  const exportMessages: ExportMessage[] = messages.map(toExportMessage);
   const exportMeta = {
     provider: settings.provider.name,
     model: settings.modelId,
     scope: workspace.title,
     currency: "Workspace currencies",
+  };
+
+  /**
+   * One answer is usually the thing worth keeping, so each reply exports on its
+   * own rather than dragging the whole thread along.
+   */
+  const exportReply = (message: Message, index: number, format: "html" | "pdf" | "csv") => {
+    const single = [toExportMessage(message, index)];
+    if (format === "html") downloadHtml(single, exportMeta, "answer");
+    else if (format === "pdf") printConversation(single, exportMeta);
+    else exportConversationCsv(single, "answer");
   };
 
   return (
@@ -247,14 +286,14 @@ function AgentPage() {
                 size="sm"
                 onClick={() => downloadHtml(exportMessages, exportMeta)}
               >
-                <Download className="size-3.5" /> Export HTML
+                <Download className="size-3.5" /> Export thread (HTML)
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => printConversation(exportMessages, exportMeta)}
               >
-                <Printer className="size-3.5" /> Export PDF
+                <Printer className="size-3.5" /> Export thread (PDF)
               </Button>
             </>
           ) : null}
@@ -262,7 +301,7 @@ function AgentPage() {
             variant="outline"
             size="sm"
             onClick={() => setShowSidebar((s) => !s)}
-            title={showSidebar ? "Hide sidebar" : "Show workspace info & prompts"}
+            title={showSidebar ? "Hide sidebar" : "Show history, prompts & workspace info"}
           >
             {showSidebar ? (
               <>
@@ -339,13 +378,42 @@ function AgentPage() {
                     </div>
                   ) : (
                     <div>
-                      <div className="mb-3 flex items-center gap-2 border-b pb-2 text-xs font-medium text-muted-foreground">
+                      <div className="mb-3 flex flex-wrap items-center gap-2 border-b pb-2 text-xs font-medium text-muted-foreground">
                         <Bot className="size-3.5 text-primary" aria-hidden="true" />
                         <span>TryGC Operating Intelligence</span>
                         <span className="text-muted-foreground/50">·</span>
                         <span>
                           {settings.provider.name} ({settings.modelId})
                         </span>
+                        <div className="ms-auto flex items-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 px-2 text-xs"
+                            onClick={() => exportReply(message, index, "html")}
+                            title="Export this answer as HTML"
+                          >
+                            <Download className="size-3.5" aria-hidden="true" /> HTML
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 px-2 text-xs"
+                            onClick={() => exportReply(message, index, "csv")}
+                            title="Export this answer as CSV"
+                          >
+                            <FileSpreadsheet className="size-3.5" aria-hidden="true" /> CSV
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 px-2 text-xs"
+                            onClick={() => exportReply(message, index, "pdf")}
+                            title="Export this answer as PDF"
+                          >
+                            <Printer className="size-3.5" aria-hidden="true" /> PDF
+                          </Button>
+                        </div>
                       </div>
                       <AgentMessageRenderer content={message.content} />
                     </div>
@@ -450,6 +518,17 @@ function AgentPage() {
               </p>
               <p className="mt-2 font-medium">{settings.provider.name}</p>
               <p className="text-sm text-muted-foreground">{settings.modelId}</p>
+            </Panel>
+            <Panel>
+              <AgentHistory
+                summaries={history.summaries}
+                currentId={history.currentId}
+                onOpen={openConversation}
+                onNew={startNewConversation}
+                onRename={history.rename}
+                onDelete={history.remove}
+                onClearAll={history.clearAll}
+              />
             </Panel>
             <Panel>
               <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">

@@ -5,7 +5,7 @@ import { Check, MessageSquarePlus, Pencil, Trash2, X } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 
-import type { ConversationSummary } from "./use-conversations";
+import { MAX_CONVERSATIONS, type ConversationSummary } from "./use-conversations";
 
 function relativeTime(iso: string) {
   const minutes = Math.round((Date.now() - new Date(iso).getTime()) / 60_000);
@@ -52,8 +52,8 @@ export function AgentHistory({
           <p className="font-medium text-sm">History</p>
           <p className="text-muted-foreground text-xs">
             {summaries.length
-              ? `${summaries.length} saved ${summaries.length === 1 ? "conversation" : "conversations"}, in this browser.`
-              : "Conversations are saved here as you go."}
+              ? `${summaries.length} of ${MAX_CONVERSATIONS} saved for you; the oldest drops off.`
+              : `Your last ${MAX_CONVERSATIONS} conversations are saved here as you go.`}
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={onNew}>
