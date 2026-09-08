@@ -826,7 +826,19 @@ function timestamp() {
   return new Date().toISOString().slice(0, 16).replace("T", "-").replaceAll(":", "");
 }
 
-export function downloadHtml(messages: ExportMessage[], meta: ExportMeta) {
+/** A single reply and a whole thread export the same way, only named apart. */
+export type ExportSubject = "conversation" | "answer";
+
+const fileStem = (subject: ExportSubject) =>
+  `trygc-agent${subject === "answer" ? "-answer" : ""}-${timestamp()}`;
+
+const subjectLabel = (subject: ExportSubject) => (subject === "answer" ? "Answer" : "Conversation");
+
+export function downloadHtml(
+  messages: ExportMessage[],
+  meta: ExportMeta,
+  subject: ExportSubject = "conversation",
+) {
   if (!messages.length) {
     toast.info("There is nothing to export yet.");
     return;
@@ -835,10 +847,10 @@ export function downloadHtml(messages: ExportMessage[], meta: ExportMeta) {
   const url = URL.createObjectURL(new Blob([html], { type: "text/html;charset=utf-8" }));
   const link = document.createElement("a");
   link.href = url;
-  link.download = `trygc-agent-${timestamp()}.html`;
+  link.download = `${fileStem(subject)}.html`;
   link.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
-  toast.success("Conversation exported as HTML.");
+  toast.success(`${subjectLabel(subject)} exported as HTML.`);
 }
 
 /**
@@ -876,7 +888,10 @@ export function printConversation(messages: ExportMessage[], meta: ExportMeta) {
   toast.info("Choose “Save as PDF” in the print dialog.");
 }
 
-export function exportConversationCsv(messages: ExportMessage[]) {
+export function exportConversationCsv(
+  messages: ExportMessage[],
+  subject: ExportSubject = "conversation",
+) {
   const rows: Record<string, string | number>[] = [];
   messages.forEach((message, index) => {
     for (const part of flatten(message)) {
@@ -903,8 +918,8 @@ export function exportConversationCsv(messages: ExportMessage[]) {
     toast.info("There is nothing to export yet.");
     return;
   }
-  exportRows(`trygc-agent-${timestamp()}`, rows);
-  toast.success("Conversation exported as CSV.");
+  exportRows(fileStem(subject), rows);
+  toast.success(`${subjectLabel(subject)} exported as CSV.`);
 }
 
 /** Exports a single table a tool produced, which is usually the thing worth keeping. */
