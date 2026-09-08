@@ -69,6 +69,18 @@ export function personVisible(a: Actor, u: Actor, w: WorkspaceId) {
   if (level(a) === "supervisor") return (a.reportIds ?? []).includes(u.id);
   return u.id === a.managerId;
 }
+/**
+ * Who a person may settle commission for. Same hierarchy as personVisible, with
+ * one deliberate difference: someone offboarding still appears, because work they
+ * closed before leaving must still be paid out.
+ */
+export function payeeVisible(a: Actor, u: Actor, w: WorkspaceId) {
+  if (!getWorkspaceIdsForUser(u).includes(w)) return false;
+  if (u.id === a.id) return true;
+  if (manager(a)) return true;
+  if (level(a) === "supervisor") return (a.reportIds ?? []).includes(u.id);
+  return u.id === a.managerId;
+}
 export function permission(
   a: Actor,
   w: WorkspaceId,

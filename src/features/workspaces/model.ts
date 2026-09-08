@@ -224,10 +224,24 @@ export const fields: Record<Kind, Field[]> = {
   ],
   proposal: [
     { ...client, required: true },
+    { key: "amount", en: "Amount", ar: "المبلغ", type: "number" },
+    {
+      key: "currency",
+      en: "Currency",
+      ar: "العملة",
+      options: ["SAR", "EGP", "AED", "KWD", "QAR", "BHD"],
+    },
     { key: "deliveryUrl", en: "Proposal link", ar: "رابط المقترح", type: "url" },
   ],
   contract: [
     { ...client, required: true },
+    { key: "amount", en: "Contract value", ar: "قيمة العقد", type: "number" },
+    {
+      key: "currency",
+      en: "Currency",
+      ar: "العملة",
+      options: ["SAR", "EGP", "AED", "KWD", "QAR", "BHD"],
+    },
     { key: "deliveryUrl", en: "Contract link", ar: "رابط العقد", type: "url" },
   ],
   bill: [

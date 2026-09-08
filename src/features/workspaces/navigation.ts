@@ -15,7 +15,8 @@ export type Module =
   | "overdue"
   | "collections"
   | "portfolio"
-  | "workload";
+  | "workload"
+  | "commission";
 export const extras: Record<string, [string, string]> = {
   home: ["Home", "الرئيسية"],
   dashboard: ["Dashboard", "لوحة التحليلات"],
@@ -31,6 +32,7 @@ export const extras: Record<string, [string, string]> = {
   collections: ["Collections", "التحصيل"],
   portfolio: ["Portfolio", "محفظة المشاريع"],
   workload: ["Workload", "توزيع العمل"],
+  commission: ["Commission Calculator", "حاسبة العمولات"],
 };
 export const moduleTitle = (m: string): [string, string] =>
   titles[m as Kind] ?? extras[m] ?? [m, m];
@@ -45,8 +47,8 @@ const work: Record<WorkspaceId, Module[]> = {
     "meeting",
     "portfolio",
   ],
-  sales: ["action", "client", "meeting", "quotation", "proposal", "contract", "task"],
-  finance: ["bill", "collections", "payment", "task", "meeting", "overdue"],
+  sales: ["action", "client", "meeting", "quotation", "proposal", "contract", "commission", "task"],
+  finance: ["bill", "collections", "payment", "commission", "task", "meeting", "overdue"],
   hr: [
     "employee",
     "people-action",

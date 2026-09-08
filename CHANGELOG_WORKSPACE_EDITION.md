@@ -18,12 +18,14 @@
 
 - Kept Sales activity, client follow-ups and meetings, but isolated them inside Sales workspace.
 - Sales Quick Create and search no longer appear in unrelated workspaces.
+- Added the Commission Calculator: won deals, accepted quotations/proposals and signed contracts scored against a configurable plan (flat/tiered/progressive rates, target, floor, accelerator, bonus, cap, hold-back and collaborator splits), with a per-line CSV statement.
 
 ## Finance
 
 - Removed Finance as a global hub concept.
 - Finance pages now belong only to Finance workspace navigation.
 - Bills, payments, reminders, collection overdue and Finance reports stay intact.
+- Added the Commission Calculator on a cash-collected basis, holding back commission on collections that arrived after the due date.
 
 ## HR
 
