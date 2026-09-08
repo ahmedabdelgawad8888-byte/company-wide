@@ -28,6 +28,7 @@ import { RecordForm } from "./record-form";
 import { RecordDetail } from "./record-detail";
 import { WorkTable, WorkCalendar, Workload } from "./work-views";
 import { AutomationCenter } from "./automation-center";
+import { CommissionCenter } from "./commission-panel";
 
 const homeTitles: Record<WorkspaceId, [string, string]> = {
   management: ["Management Command Room", "غرفة قيادة الإدارة"],
@@ -189,6 +190,8 @@ export function HubPage({
         <Workload rows={rows} />
       ) : module === "automations" ? (
         <AutomationCenter workspaceId={workspaceId} />
+      ) : module === "commission" && (workspaceId === "sales" || workspaceId === "finance") ? (
+        <CommissionCenter workspaceId={workspaceId} rows={rows} onOpen={open} />
       ) : module === "people" ? (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {users

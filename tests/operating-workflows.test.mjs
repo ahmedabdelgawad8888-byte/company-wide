@@ -12,6 +12,8 @@ import {
   addComment,
   runRule,
   sweep,
+  payeeVisible,
+  personVisible,
 } from "../src/features/workspaces/service.ts";
 const admin = {
   id: "admin",
@@ -435,4 +437,18 @@ test("assignment follows the hierarchy: members assign only to themselves", () =
       users,
     ).id,
   );
+});
+
+test("commission payees follow the hierarchy and still include a leaver", () => {
+  const leaver = { ...sales, id: "sales-leaver", status: "offboarding", managerId: "sales-lead" };
+  // A leaver is hidden from the people directory but must still be settled.
+  assert.equal(personVisible(salesLead, leaver, "sales"), false);
+  assert.equal(payeeVisible(salesLead, leaver, "sales"), true);
+  // The hierarchy itself is unchanged: a member sees only themselves and their manager.
+  assert.equal(payeeVisible(sales, sales, "sales"), true);
+  assert.equal(payeeVisible(sales, salesSupervisor, "sales"), false);
+  assert.equal(payeeVisible(salesSupervisor, sales, "sales"), true);
+  assert.equal(payeeVisible(salesLead, sales, "sales"), true);
+  // Nobody is a payee in a workspace they do not belong to.
+  assert.equal(payeeVisible(salesLead, hr, "sales"), false);
 });

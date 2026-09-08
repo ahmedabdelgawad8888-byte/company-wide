@@ -43,7 +43,7 @@ approvals, analysis requests, automation and full oversight of Sales, Finance an
 
 **Purpose:** keep every customer interaction connected to a clear next action.
 
-**Navigation:** Sales Home · Sales Activity · Clients & Follow-ups · Sales Actions · Client Meetings · Sales Calendar · Sales Performance
+**Navigation:** Sales Home · Sales Activity · Clients & Follow-ups · Sales Actions · Client Meetings · Sales Calendar · Commission Calculator · Sales Performance
 
 **Working rule:** every call/meeting needs an outcome; every open commitment needs a next action and deadline.
 
@@ -51,7 +51,7 @@ approvals, analysis requests, automation and full oversight of Sales, Finance an
 
 **Purpose:** protect cash flow and prevent missed due dates.
 
-**Navigation:** Finance Home · Bills & Collections · Payments · Finance Actions · Collection Overdue · Due Calendar · Finance Reports
+**Navigation:** Finance Home · Bills & Collections · Payments · Finance Actions · Collection Overdue · Due Calendar · Commission Calculator · Finance Reports
 
 **Working rule:** bills create pre-due follow-up actions; unpaid items move into overdue control until a financial outcome is confirmed.
 
@@ -62,6 +62,39 @@ approvals, analysis requests, automation and full oversight of Sales, Finance an
 **Navigation:** HR Home · People Actions · People Directory · Interviews & Meetings · HR Calendar · People Reports
 
 **Working rule:** joining, onboarding, attendance, interviews and employee actions stay assigned with a due date. HR records stay private to their owner unless the HR lead or Management is looking.
+
+## Commission Calculator
+
+Sales and Finance each carry a commission engine at `/workspaces/<sales|finance>/commission`.
+Same engine, different basis:
+
+| Workspace   | Paid on        | Credited records                                                    |
+| ----------- | -------------- | ------------------------------------------------------------------- |
+| **Sales**   | Business won   | Won CRM deals, accepted quotations and proposals, signed contracts. |
+| **Finance** | Cash collected | Payments recorded against invoices and bills.                       |
+
+**Plan rules** (set by the workspace lead, read-only for everyone else):
+
+- **Method** — flat rate, tiered (the reached tier's rate on the whole volume), or
+  progressive (each slice of volume at its own tier rate).
+- **Target, floor and bonus** — a per-person quota, a minimum attainment before anything
+  is earned, and a fixed bonus once the quota is met.
+- **Accelerator** — a multiplier on commission earned above a chosen attainment.
+- **Payout cap** and **rounding** — the settlement ceiling and step.
+- **Hold-back on at-risk volume** — Sales flags business booked against a client with an
+  overdue unpaid invoice; Finance flags cash that arrived after the due date. The hold-back
+  is proportional to the at-risk share of a person's volume.
+- **Owner share on shared work** — the owner keeps their percentage of a record, the rest
+  is split equally across its collaborators.
+
+Amounts in any currency are converted to SAR at the group FX rate before the maths runs.
+The rows a person sees follow the workspace hierarchy — members see their own commission,
+supervisors their reports', leads the whole workspace — with one deliberate exception:
+someone offboarding still appears, because work they closed before leaving must still be
+settled. **Export statement** sends a per-line CSV through the export queue.
+
+The engine is `src/features/workspaces/commission.ts` (pure maths, covered by
+`tests/commission.test.mjs`); `commission-data.ts` maps records onto it.
 
 ## Seeded hierarchy (demo data)
 

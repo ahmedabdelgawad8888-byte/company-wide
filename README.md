@@ -32,11 +32,15 @@ Daily commercial execution without turning the hub into a CRM suite.
 
 Sales flow: client activity → outcome → next action → follow-up → meeting → commitment → performance.
 
+Commission Calculator: won deals, accepted quotations and signed contracts feed a tiered plan with targets, accelerators, hold-backs and a per-line statement export.
+
 ### 3) Finance
 
 A focused accounts and collection workspace.
 
 Finance flow: bill → pre-due reminders → collection action → payment/promise-to-pay → overdue escalation → reporting.
+
+Commission Calculator: the same engine paid on cash actually collected, with a hold-back on collections that landed after the due date.
 
 ### 4) HR
 
