@@ -1,11 +1,11 @@
 # TryGC Workspace Hub
 
-A workspace-first operating hub for TryGC. The UI/design system from the provided Trygc Command Center is preserved; the product structure is reorganized around four focused workspaces instead of a global Finance/Sales-heavy menu.
+A workspace-first operating hub for TryGC. The UI/design system from the provided Trygc Command Center is preserved; the product structure is organized around five focused workspaces instead of a global Finance/Sales-heavy menu.
 
 ## Workspaces
 
 Every person belongs to **exactly one** workspace. Only Management (Group Admin /
-Executive Management) sees all four. See `WORKSPACE_GUIDE.md` for the full model.
+Executive Management) sees every workspace. See `WORKSPACE_GUIDE.md` for the full model.
 
 ### 1) Management (admins & leadership)
 
@@ -18,8 +18,6 @@ Seed team:
 - Ahmed Essmat — Technology (Group Admin)
 - Amr — Operations
 - Alaa — Business Analysis
-- Abdel Fattah — IT
-- Sabry — IT & Automation
 - Ahmed Ismail — Development
 - Ahmed — UI/UX
 - Data Analysis Lead — Data Analysis
@@ -46,6 +44,17 @@ Commission Calculator: the same engine paid on cash actually collected, with a h
 
 People actions, directory, interviews/meetings, HR calendar and people reporting.
 
+### 5) IT
+
+Infrastructure and connectivity, backup and disaster recovery, support, devices, access governance, recurring controls, SOPs and IT reporting. The seeded operating model includes 10 portfolios, daily/weekly/monthly routine definitions, continuous processes, data-quality controls and automation recommendations.
+
+Seed team:
+
+- Mahmoud Taha — IT workspace lead
+- Bader Al-Qahtani — IT supervisor / backup owner
+- Abdel Fattah — IT support
+- Sabry — IT automation
+
 ## Role hierarchy
 
 Inside each workspace there are three levels, and visibility follows them:
@@ -53,7 +62,7 @@ Inside each workspace there are three levels, and visibility follows them:
 - **Member** — sees only records they own, created, or collaborate on.
 - **Supervisor** — sees their own records plus everything owned by their direct reports.
 - **Workspace lead** — sees every record in their own workspace.
-- **Management / Admin** — sees every record in all four workspaces.
+- **Management / Admin** — sees every record in all workspaces.
 
 Assignment follows the same line: members assign only to themselves, supervisors to
 their reports, leads across their workspace, admins anywhere. A person's workspace and

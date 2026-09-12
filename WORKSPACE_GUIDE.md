@@ -1,7 +1,7 @@
 # TryGC Workspace Guide
 
-The hub is organised as **four separate workspaces**. Every person belongs to exactly
-one of them. Only Management (Group Admin / Executive Management) sees all four.
+The hub is organised as **five separate workspaces**. Every person belongs to exactly
+one of them. Only Management (Group Admin / Executive Management) sees every workspace.
 
 ## Visibility model
 
@@ -12,7 +12,7 @@ Each workspace has a three-level hierarchy. What a person sees is decided by the
 | **Member**             | Only records they own, created, or are a collaborator on — their own profile of work. |
 | **Supervisor**         | Their own records **plus** everything owned by people reporting to them.              |
 | **Workspace lead**     | Every record in their own workspace.                                                  |
-| **Management / Admin** | Every record in **all four** workspaces.                                              |
+| **Management / Admin** | Every record in **all** workspaces.                                                   |
 
 Assignment follows the same line: a member can only assign work to themselves, a
 supervisor to their direct reports, a lead to anyone in their workspace, an admin to anyone.
@@ -23,7 +23,7 @@ Each person's home workspace and level live on their user record (`workspaceId`,
 ## Management Workspace
 
 **Purpose:** the admin and leadership room — cross-team priorities, decisions, blockers,
-approvals, analysis requests, automation and full oversight of Sales, Finance and HR.
+approvals, analysis requests, automation and full oversight of Sales, Finance, HR and IT.
 
 **Home shows:**
 
@@ -62,6 +62,16 @@ approvals, analysis requests, automation and full oversight of Sales, Finance an
 **Navigation:** HR Home · People Actions · People Directory · Interviews & Meetings · HR Calendar · People Reports
 
 **Working rule:** joining, onboarding, attendance, interviews and employee actions stay assigned with a due date. HR records stay private to their owner unless the HR lead or Management is looking.
+
+## IT Workspace
+
+**Purpose:** keep infrastructure, support, recovery, access and technology operations reliable and visibly owned.
+
+**Navigation:** IT Dashboard · IT Operations Control Room · Routines · Tasks · Projects · Continuous Processes · SOPs · Blockers · Data Issues · Calendar · Reports · Workload · Automations
+
+**Record types:** Routine · Task · Project · Continuous Process · SOP · Decision · Blocker · Data Issue · Meeting · File · Approval
+
+**Working rule:** recurring controls have one persistent definition and separate execution history. Proposed schedules remain labelled Proposed until management approves them.
 
 ## Commission Calculator
 

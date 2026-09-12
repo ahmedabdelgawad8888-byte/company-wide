@@ -5,6 +5,7 @@ import { LocalRepository, STORAGE_KEY } from "./repository";
 import { seedHub } from "./seed";
 import { emptyState, sweep, visible } from "./service";
 import { today, type Actor, type HubState } from "./model";
+import { ensureITWorkspace } from "./it-seed";
 
 type HubContext = {
   state: HubState;
@@ -53,6 +54,11 @@ export function HubProvider({ children }: { children: ReactNode }) {
       const stored = repo.current.load();
       const next = stored ?? seedHub(initialDb.current);
       if (!stored) repo.current.save(next, 0);
+      else if (ensureITWorkspace(next, users)) {
+        const previousRevision = next.revision;
+        next.revision += 1;
+        repo.current.save(next, previousRevision);
+      }
       latest.current = next;
       setState(next);
       setError("");

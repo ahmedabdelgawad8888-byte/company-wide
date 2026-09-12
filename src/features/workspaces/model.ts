@@ -24,6 +24,9 @@ export const kinds = [
   "data-issue",
   "file",
   "approval",
+  "routine",
+  "process",
+  "sop",
 ] as const;
 export type Kind = (typeof kinds)[number];
 export type Actor = {
@@ -75,6 +78,9 @@ export const titles: Record<Kind, [string, string]> = {
   "data-issue": ["Data Issue", "مشكلة بيانات"],
   file: ["File", "ملف"],
   approval: ["Approval", "موافقة"],
+  routine: ["Routine", "إجراء دوري"],
+  process: ["Continuous Process", "عملية مستمرة"],
+  sop: ["SOP", "إجراء تشغيل قياسي"],
 };
 export const taskStatuses = [
   "Backlog",
@@ -128,6 +134,25 @@ export const statuses: Record<Kind, string[]> = {
   "data-issue": ["Open", "In Progress", "Blocked", "Resolved"],
   file: ["Available", "Archived"],
   approval: ["Pending", "Approved", "Rejected", "Returned"],
+  routine: [
+    "Not Started",
+    "In Progress",
+    "Waiting",
+    "Blocked",
+    "On Hold",
+    "Completed",
+    "Cancelled",
+  ],
+  process: [
+    "Not Started",
+    "In Progress",
+    "Waiting",
+    "Blocked",
+    "On Hold",
+    "Completed",
+    "Cancelled",
+  ],
+  sop: ["Draft", "Under Review", "Approved", "Archived"],
 };
 const client: Field = { key: "clientId", en: "Client", ar: "العميل", link: "client" };
 const project: Field = { key: "projectId", en: "Project", ar: "المشروع", link: "project" };
@@ -380,6 +405,72 @@ export const fields: Record<Kind, Field[]> = {
     { key: "impact", en: "Impact", ar: "الأثر", required: true },
     { key: "reason", en: "Decision reason", ar: "سبب القرار", type: "textarea" },
   ],
+  routine: [
+    { key: "portfolio", en: "Portfolio / category", ar: "المحفظة أو التصنيف", required: true },
+    { key: "cadence", en: "Recurrence", ar: "التكرار", required: true },
+    { key: "schedule", en: "Schedule", ar: "الجدول" },
+    {
+      key: "basis",
+      en: "Basis",
+      ar: "الأساس",
+      options: ["Confirmed", "Proposed", "Active-period confirmed"],
+    },
+    { key: "evidence", en: "Required evidence", ar: "الدليل المطلوب", type: "textarea" },
+    { key: "successCriteria", en: "Success criteria", ar: "معايير النجاح", type: "textarea" },
+    { key: "backupOwner", en: "Backup owner", ar: "المسؤول البديل" },
+    { key: "lastExecution", en: "Last execution", ar: "آخر تنفيذ", type: "date" },
+    { key: "nextExecution", en: "Next execution", ar: "التنفيذ القادم", type: "date" },
+  ],
+  process: [
+    { key: "portfolio", en: "Portfolio / category", ar: "المحفظة أو التصنيف", required: true },
+    { key: "operatingModel", en: "Operating model", ar: "نموذج التشغيل", type: "textarea" },
+    {
+      key: "evidence",
+      en: "Execution log / evidence",
+      ar: "سجل التنفيذ أو الدليل",
+      type: "textarea",
+    },
+    { key: "escalationOwner", en: "Escalation owner", ar: "مسؤول التصعيد" },
+  ],
+  sop: [
+    { key: "purpose", en: "Purpose", ar: "الغرض", type: "textarea", required: true },
+    { key: "scope", en: "Scope", ar: "النطاق", type: "textarea", required: true },
+    { key: "trigger", en: "Trigger / frequency", ar: "المحفز أو التكرار", required: true },
+    { key: "backupOwner", en: "Backup owner", ar: "المسؤول البديل" },
+    { key: "tools", en: "Required tools / access", ar: "الأدوات والصلاحيات", type: "textarea" },
+    { key: "preconditions", en: "Preconditions", ar: "المتطلبات المسبقة", type: "textarea" },
+    {
+      key: "procedure",
+      en: "Numbered procedure",
+      ar: "الإجراء المرقم",
+      type: "textarea",
+      required: true,
+    },
+    {
+      key: "evidence",
+      en: "Required evidence",
+      ar: "الدليل المطلوب",
+      type: "textarea",
+      required: true,
+    },
+    {
+      key: "successCriteria",
+      en: "Success criteria",
+      ar: "معايير النجاح",
+      type: "textarea",
+      required: true,
+    },
+    {
+      key: "escalation",
+      en: "Failure / escalation path",
+      ar: "مسار الفشل والتصعيد",
+      type: "textarea",
+    },
+    { key: "relatedSystems", en: "Related systems", ar: "الأنظمة المرتبطة" },
+    { key: "version", en: "Version", ar: "الإصدار", required: true },
+    { key: "reviewDate", en: "Review date", ar: "تاريخ المراجعة", type: "date", required: true },
+    { key: "documentOwner", en: "Document owner", ar: "مالك المستند", required: true },
+  ],
 };
 export const workspaceKinds: Record<WorkspaceId, Kind[]> = {
   management: [
@@ -417,11 +508,24 @@ export const workspaceKinds: Record<WorkspaceId, Kind[]> = {
     "file",
     "approval",
   ],
+  it: [
+    "project",
+    "task",
+    "routine",
+    "process",
+    "sop",
+    "decision",
+    "blocker",
+    "data-issue",
+    "meeting",
+    "file",
+    "approval",
+  ],
 };
 const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use a valid date");
 export const recordSchema = z.object({
   id: z.string(),
-  workspaceId: z.enum(["management", "sales", "finance", "hr"]),
+  workspaceId: z.enum(["management", "sales", "finance", "hr", "it"]),
   kind: z.enum(kinds),
   title: z.string().trim().min(3).max(180),
   description: z.string().max(12000),

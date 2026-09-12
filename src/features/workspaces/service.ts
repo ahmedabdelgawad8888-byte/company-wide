@@ -22,7 +22,7 @@ import {
 } from "./model.ts";
 
 export const id = (prefix = "REC") => `${prefix}-${crypto.randomUUID()}`;
-/** Group Admin / Executive Management: above every workspace, see and steer all four. */
+/** Group Admin / Executive Management: above every workspace, see and steer all of them. */
 export const executive = (a: Actor) => isAdminUser(a);
 /** Where this person sits in their own workspace. */
 export const level = (a: Actor): WorkspaceLevel => getWorkspaceLevel(a);

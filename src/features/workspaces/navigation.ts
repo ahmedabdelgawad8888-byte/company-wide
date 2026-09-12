@@ -59,6 +59,7 @@ const work: Record<WorkspaceId, Module[]> = {
     "task",
     "meeting",
   ],
+  it: ["routine", "task", "project", "process", "sop", "blocker", "data-issue", "meeting"],
 };
 export const modulePath = (w: WorkspaceId, m: Module) => `/workspaces/${w}/${m}`;
 export const validModules = (w: WorkspaceId): Module[] => [
