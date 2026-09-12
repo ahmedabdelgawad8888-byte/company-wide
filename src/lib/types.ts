@@ -37,7 +37,7 @@ export interface User {
   scope: "group" | "entity";
   status: "active" | "suspended" | "offboarding";
   lastLogin: string;
-  /** The single workspace this person belongs to. Admins still see all four. */
+  /** The single workspace this person belongs to. Admins still see every workspace. */
   workspaceId: WorkspaceId;
   /** Position in that workspace's hierarchy: member, supervisor or lead. */
   workspaceLevel: WorkspaceLevel;

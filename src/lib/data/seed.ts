@@ -144,7 +144,7 @@ export const fxRates: FxRate[] = [
 
 // Every person belongs to exactly one workspace. `workspaceLevel` sets what they see
 // inside it: member = own records only, supervisor = own + direct reports,
-// lead = the whole workspace. Group Admin / Executive Management see all four.
+// lead = the whole workspace. Group Admin / Executive Management see every workspace.
 export const users: User[] = [
   {
     id: "u1",
@@ -321,8 +321,22 @@ export const users: User[] = [
     scope: "group",
     status: "active",
     lastLogin: "2026-09-04 08:02",
-    workspaceId: "management",
+    workspaceId: "it",
     workspaceLevel: "supervisor",
+    managerId: "u1",
+  },
+  {
+    id: "it-mahmoud",
+    name: "Mahmoud Taha",
+    email: "mahmoud.taha@trygc.com",
+    role: "IT Admin",
+    department: "IT",
+    entityId: "eg",
+    scope: "group",
+    status: "active",
+    lastLogin: "2026-09-06 09:20",
+    workspaceId: "it",
+    workspaceLevel: "lead",
     managerId: "u1",
   },
   {
@@ -391,9 +405,9 @@ export const users: User[] = [
     scope: "group",
     status: "active",
     lastLogin: "2026-09-06 08:12",
-    workspaceId: "management",
+    workspaceId: "it",
     workspaceLevel: "member",
-    managerId: "core-essmat",
+    managerId: "it-mahmoud",
   },
   {
     id: "core-sabry",
@@ -405,9 +419,9 @@ export const users: User[] = [
     scope: "group",
     status: "active",
     lastLogin: "2026-09-06 08:09",
-    workspaceId: "management",
+    workspaceId: "it",
     workspaceLevel: "member",
-    managerId: "core-essmat",
+    managerId: "it-mahmoud",
   },
   {
     id: "core-ismaiel",

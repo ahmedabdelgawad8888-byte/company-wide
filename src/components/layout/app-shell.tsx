@@ -61,6 +61,7 @@ const QUICK_CREATE_BY_WORKSPACE: Record<WorkspaceId, QuickCreateKind[]> = {
   sales: ["action", "client", "meeting", "task"],
   finance: ["bill", "payment", "task", "meeting"],
   hr: ["employee", "people-action", "interview", "onboarding", "task", "meeting"],
+  it: ["routine", "task", "project", "process", "sop", "blocker", "data-issue", "meeting"],
 };
 
 function workspaceSearchText(workspaceId: WorkspaceId, t: (en: string, ar: string) => string) {
@@ -78,6 +79,11 @@ function workspaceSearchText(workspaceId: WorkspaceId, t: (en: string, ar: strin
     return t(
       "Search people, onboarding, meetings and HR actions…",
       "ابحث عن الموظفين والتعيين والاجتماعات وإجراءات الموارد البشرية…",
+    );
+  if (workspaceId === "it")
+    return t(
+      "Search routines, incidents, infrastructure, SOPs and IT work…",
+      "ابحث في الإجراءات الدورية والحوادث والبنية التحتية وإجراءات التشغيل وأعمال تقنية المعلومات…",
     );
   return t(
     "Search priorities, blockers, decisions, analysis requests and people…",
@@ -103,6 +109,10 @@ function notificationMatchesWorkspace(
     );
   if (workspaceId === "hr")
     return /hr|people|employee|onboarding|interview|attendance|payroll|hiring/.test(text);
+  if (workspaceId === "it")
+    return /it|infrastructure|backup|router|network|device|access|incident|veeam|firewall|server|monitoring/.test(
+      text,
+    );
   return (
     notification.category === "System" ||
     /core|technology|automation|operations|blocker|development|ui\/ux|business analysis|webhook|api|db|data|analysis|report|insight|dataset|dashboard/.test(

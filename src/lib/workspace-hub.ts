@@ -1,15 +1,15 @@
-export type WorkspaceId = "management" | "sales" | "finance" | "hr";
+export type WorkspaceId = "management" | "sales" | "finance" | "hr" | "it";
 
 /**
  * Position inside a workspace. Visibility widens as the level rises:
  * member     - only records they own, created or collaborate on
  * supervisor - the above plus everything owned by their direct reports
  * lead       - every record in their own workspace
- * Group Admin / Executive Management sit above all four workspaces.
+ * Group Admin / Executive Management sit above all workspaces.
  */
 export type WorkspaceLevel = "member" | "supervisor" | "lead";
 
-export const WORKSPACE_IDS: WorkspaceId[] = ["management", "sales", "finance", "hr"];
+export const WORKSPACE_IDS: WorkspaceId[] = ["management", "sales", "finance", "hr", "it"];
 
 export interface WorkspaceNavItem {
   to: string;
@@ -107,6 +107,28 @@ const WORKSPACE_NAV: Record<WorkspaceId, WorkspaceNavGroup[]> = {
       ],
     },
   ],
+  it: [
+    {
+      label: "IT Operations",
+      labelAr: "عمليات تقنية المعلومات",
+      items: [
+        { to: "/workspace", label: "IT Home", labelAr: "الرئيسية" },
+        { to: "/tasks", label: "Tasks & Tickets", labelAr: "المهام والتذاكر", badge: "tasks" },
+        { to: "/calendar", label: "Routine Calendar", labelAr: "تقويم الإجراءات الدورية" },
+        { to: "/overdue", label: "Blockers & Overdue", labelAr: "المعوقات والمتأخرات" },
+      ],
+    },
+    {
+      label: "Control & Knowledge",
+      labelAr: "الرقابة والمعرفة",
+      items: [
+        { to: "/files", label: "SOPs & Files", labelAr: "الإجراءات والملفات" },
+        { to: "/reports", label: "IT Reports", labelAr: "تقارير تقنية المعلومات" },
+        { to: "/admin/automations", label: "Automations", labelAr: "الأتمتة" },
+        { to: "/activity", label: "Activity & Audit", labelAr: "النشاط والتدقيق" },
+      ],
+    },
+  ],
 };
 
 export const WORKSPACES: WorkspaceDefinition[] = [
@@ -117,7 +139,7 @@ export const WORKSPACES: WorkspaceDefinition[] = [
     shortTitle: "Management",
     shortTitleAr: "الإدارة",
     description:
-      "The admin and leadership workspace: cross-team priorities, blockers, decisions, approvals, analysis requests, automation and full visibility over Sales, Finance and HR.",
+      "The admin and leadership workspace: cross-team priorities, blockers, decisions, approvals, analysis requests, automation and full visibility over Sales, Finance, HR and IT.",
     descriptionAr:
       "مساحة الإدارة والمشرفين: الأولويات المشتركة والمعوقات والقرارات والموافقات وطلبات التحليل والأتمتة مع رؤية كاملة على المبيعات والحسابات والموارد البشرية.",
     purpose: "See every workspace, decide fast and unblock the company.",
@@ -183,9 +205,24 @@ export const WORKSPACES: WorkspaceDefinition[] = [
     departments: ["HR", "People"],
     nav: WORKSPACE_NAV.hr,
   },
+  {
+    id: "it",
+    title: "IT",
+    titleAr: "تقنية المعلومات",
+    shortTitle: "IT",
+    shortTitleAr: "IT",
+    description:
+      "IT operations, infrastructure controls, recurring routines, support work, SOPs and technology governance in one accountable workspace.",
+    descriptionAr:
+      "عمليات تقنية المعلومات وضوابط البنية التحتية والإجراءات الدورية والدعم وإجراءات التشغيل والحوكمة التقنية في مساحة واحدة.",
+    purpose: "Keep technology reliable, recoverable, secure and visibly owned.",
+    purposeAr: "الحفاظ على موثوقية التقنية وقابليتها للاستعادة وأمنها ووضوح مسؤولياتها.",
+    departments: ["IT"],
+    nav: WORKSPACE_NAV.it,
+  },
 ];
 
-/** Roles that sit above every workspace and see all four of them. */
+/** Roles that sit above every workspace and see all of them. */
 const ADMIN_ROLES = new Set(["Group Admin", "Executive Management"]);
 
 /** Fallback level when a user record carries no explicit workspaceLevel. */
@@ -219,6 +256,7 @@ const WORKSPACE_BY_ROLE: Record<string, WorkspaceId> = {
   "Community Specialist": "sales",
   "HR Manager": "hr",
   "HR Specialist": "hr",
+  "IT Admin": "it",
 };
 
 export interface WorkspaceUserLike {
@@ -268,7 +306,7 @@ export function getWorkspaceLevel(user: WorkspaceUserLike): WorkspaceLevel {
 
 /**
  * Workspaces a person may open. Everyone belongs to exactly one workspace;
- * only Group Admin / Executive Management see all four.
+ * only Group Admin / Executive Management see every workspace.
  */
 export function getWorkspaceIdsForUser(user: WorkspaceUserLike): WorkspaceId[] {
   if (isAdminUser(user)) return [...WORKSPACE_IDS];

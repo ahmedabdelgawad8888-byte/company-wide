@@ -35,6 +35,7 @@ const homeTitles: Record<WorkspaceId, [string, string]> = {
   sales: ["My Sales Day", "يومي في المبيعات"],
   finance: ["My Finance Day", "يومي في الحسابات"],
   hr: ["People Operations Today", "عمليات الموظفين اليوم"],
+  it: ["IT Operations Control Room", "غرفة عمليات تقنية المعلومات"],
 };
 const levelTitle = (value: "member" | "supervisor" | "lead"): [string, string] =>
   value === "lead"
@@ -47,6 +48,7 @@ const defaultKind: Record<WorkspaceId, Kind> = {
   sales: "action",
   finance: "bill",
   hr: "people-action",
+  it: "routine",
 };
 export function HubPage({
   workspaceId,
@@ -483,7 +485,9 @@ function Home({
               ? ["collections", "bill", "payment"]
               : workspaceId === "hr"
                 ? ["onboarding", "interview", "people-action"]
-                : ["project", "decision", "blocker", "request"]
+                : workspaceId === "it"
+                  ? ["routine", "task", "blocker", "sop"]
+                  : ["project", "decision", "blocker", "request"]
           ).map((m) => (
             <Link
               key={m}

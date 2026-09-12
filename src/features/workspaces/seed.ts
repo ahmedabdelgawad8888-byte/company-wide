@@ -3,6 +3,7 @@ import type { Actor, Draft, HubState, Kind, WorkRecord } from "./model";
 import { dayOffset, statuses, today } from "./model";
 import { emptyState } from "./service";
 import type { Task, Invoice, Client, CalendarEvent } from "../../lib/types";
+import { ensureITWorkspace } from "./it-seed";
 
 export function seedHub(db: {
   users: Actor[];
@@ -304,5 +305,6 @@ export function seedHub(db: {
       lastRun: "",
     });
   }
+  ensureITWorkspace(s, db.users);
   return s;
 }

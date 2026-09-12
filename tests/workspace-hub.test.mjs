@@ -39,10 +39,10 @@ const dataUser = {
   role: "Data Analyst",
 };
 
-test("hub exposes exactly four primary workspaces", () => {
+test("hub exposes the five primary workspaces including IT", () => {
   assert.deepEqual(
     WORKSPACES.map((w) => w.id),
-    ["management", "sales", "finance", "hr"],
+    ["management", "sales", "finance", "hr", "it"],
   );
 });
 
@@ -55,12 +55,19 @@ test("everyone belongs to exactly one workspace", () => {
 });
 
 test("only Group Admin / Executive Management see every workspace", () => {
-  assert.deepEqual(getWorkspaceIdsForUser(adminUser), ["management", "sales", "finance", "hr"]);
+  assert.deepEqual(getWorkspaceIdsForUser(adminUser), [
+    "management",
+    "sales",
+    "finance",
+    "hr",
+    "it",
+  ]);
   assert.deepEqual(getWorkspaceIdsForUser({ ...adminUser, role: "Executive Management" }), [
     "management",
     "sales",
     "finance",
     "hr",
+    "it",
   ]);
   assert.equal(getWorkspaceIdsForUser(salesUser).length, 1);
 });
