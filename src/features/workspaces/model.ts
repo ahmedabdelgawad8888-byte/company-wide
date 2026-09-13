@@ -521,11 +521,22 @@ export const workspaceKinds: Record<WorkspaceId, Kind[]> = {
     "file",
     "approval",
   ],
+  pmo: [
+    "project",
+    "task",
+    "decision",
+    "blocker",
+    "request",
+    "data-issue",
+    "meeting",
+    "file",
+    "approval",
+  ],
 };
 const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use a valid date");
 export const recordSchema = z.object({
   id: z.string(),
-  workspaceId: z.enum(["management", "sales", "finance", "hr", "it"]),
+  workspaceId: z.enum(["management", "sales", "finance", "hr", "it", "pmo"]),
   kind: z.enum(kinds),
   title: z.string().trim().min(3).max(180),
   description: z.string().max(12000),
@@ -534,8 +545,8 @@ export const recordSchema = z.object({
   entityId: z.string(),
   status: z.string(),
   priority: z.enum(["Low", "Medium", "High", "Critical"]),
-  startDate: date,
-  dueDate: date,
+  startDate: date.or(z.literal("")),
+  dueDate: date.or(z.literal("")),
   progress: z.number().min(0).max(100),
   nextAction: z.string().max(2000),
   details: z.record(z.string(), z.string()),
@@ -663,7 +674,8 @@ export const closed = (r: WorkRecord) =>
     "Archived",
     "Verified",
   ].includes(r.status);
-export const overdue = (r: WorkRecord, day = today()) => !closed(r) && r.dueDate < day;
+export const overdue = (r: WorkRecord, day = today()) =>
+  !closed(r) && !!r.dueDate && r.dueDate < day;
 export const attentionScore = (r: WorkRecord, day = today()) =>
   closed(r)
     ? 0

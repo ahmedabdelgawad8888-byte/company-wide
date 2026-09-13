@@ -1,4 +1,4 @@
-export type WorkspaceId = "management" | "sales" | "finance" | "hr" | "it";
+export type WorkspaceId = "management" | "sales" | "finance" | "hr" | "it" | "pmo";
 
 /**
  * Position inside a workspace. Visibility widens as the level rises:
@@ -9,7 +9,7 @@ export type WorkspaceId = "management" | "sales" | "finance" | "hr" | "it";
  */
 export type WorkspaceLevel = "member" | "supervisor" | "lead";
 
-export const WORKSPACE_IDS: WorkspaceId[] = ["management", "sales", "finance", "hr", "it"];
+export const WORKSPACE_IDS: WorkspaceId[] = ["management", "sales", "finance", "hr", "it", "pmo"];
 
 export interface WorkspaceNavItem {
   to: string;
@@ -129,6 +129,39 @@ const WORKSPACE_NAV: Record<WorkspaceId, WorkspaceNavGroup[]> = {
       ],
     },
   ],
+  pmo: [
+    {
+      label: "PMO Dashboard",
+      labelAr: "لوحة PMO",
+      items: [
+        { to: "/workspace", label: "PMO Home", labelAr: "الرئيسية" },
+        { to: "/pmo", label: "Dashboard", labelAr: "لوحة المؤشرات" },
+        { to: "/pmo/requirements", label: "Requirements", labelAr: "المتطلبات", badge: "tasks" },
+        { to: "/pmo/timeline", label: "Timeline (Gantt)", labelAr: "الجدول الزمني" },
+        { to: "/pmo/e2e", label: "E2E View", labelAr: "المراحل الشاملة" },
+      ],
+    },
+    {
+      label: "Delivery Control",
+      labelAr: "التحكم في التسليم",
+      items: [
+        { to: "/pmo/milestones", label: "Milestones", labelAr: "المراحل الرئيسية" },
+        { to: "/pmo/actions", label: "Actions Log", labelAr: "سجل الإجراءات" },
+        { to: "/pmo/raid", label: "RAID Log", labelAr: "سجل المخاطر" },
+        { to: "/pmo/questions", label: "Open Questions", labelAr: "الأسئلة المفتوحة" },
+      ],
+    },
+    {
+      label: "Capacity & Insight",
+      labelAr: "القدرة والتحليل",
+      items: [
+        { to: "/pmo/capacity", label: "Effort & Capacity", labelAr: "الجهد والقدرة" },
+        { to: "/calendar", label: "Delivery Calendar", labelAr: "تقويم التسليم" },
+        { to: "/reports", label: "PMO Reports", labelAr: "تقارير PMO" },
+        { to: "/activity", label: "Activity & Changes", labelAr: "النشاط والتغييرات" },
+      ],
+    },
+  ],
 };
 
 export const WORKSPACES: WorkspaceDefinition[] = [
@@ -220,6 +253,32 @@ export const WORKSPACES: WorkspaceDefinition[] = [
     departments: ["IT"],
     nav: WORKSPACE_NAV.it,
   },
+  {
+    id: "pmo",
+    title: "Dev & Business Analysis",
+    titleAr: "التطوير وتحليل الأعمال",
+    shortTitle: "PMO",
+    shortTitleAr: "PMO",
+    description:
+      "Product requirements tracking, delivery milestones, RAID log, capacity planning and end-to-end value stream visibility for the development and BA team.",
+    descriptionAr:
+      "تتبع متطلبات المنتج ومراحل التسليم وسجل المخاطر وتخطيط القدرات ورؤية شاملة لمراحل القيمة لفريق التطوير وتحليل الأعمال.",
+    purpose: "Ship the right scope on time with visible progress and no surprises.",
+    purposeAr: "تسليم النطاق الصحيح في الوقت المحدد مع تقدم واضح وبدون مفاجآت.",
+    departments: [
+      "Product",
+      "Business Analysis",
+      "Development",
+      "Frontend",
+      "Backend",
+      "Full-stack",
+      "UI/UX",
+      "Data/BI",
+      "DevOps",
+      "QA",
+    ],
+    nav: WORKSPACE_NAV.pmo,
+  },
 ];
 
 /** Roles that sit above every workspace and see all of them. */
@@ -233,15 +292,25 @@ const LEVEL_BY_ROLE: Record<string, WorkspaceLevel> = {
   "Sales Manager": "lead",
   "HR Manager": "lead",
   "Operations Manager": "lead",
+  "PMO Lead": "lead",
+  "Product Manager": "lead",
   "Community Manager": "supervisor",
   "Queue Manager": "supervisor",
   "IT Admin": "supervisor",
+  "Tech Lead": "supervisor",
   "Branch Accountant": "member",
   "Account Manager": "member",
   "Community Specialist": "member",
   "Operations Specialist": "member",
   "HR Specialist": "member",
   "Data Analyst": "member",
+  "Business Analyst": "member",
+  "Frontend Developer": "member",
+  "Backend Developer": "member",
+  "Full-stack Developer": "member",
+  "UI/UX Designer": "member",
+  "QA Engineer": "member",
+  "DevOps Engineer": "member",
   Quality: "member",
   Viewer: "member",
 };
@@ -257,6 +326,16 @@ const WORKSPACE_BY_ROLE: Record<string, WorkspaceId> = {
   "HR Manager": "hr",
   "HR Specialist": "hr",
   "IT Admin": "it",
+  "PMO Lead": "pmo",
+  "Product Manager": "pmo",
+  "Tech Lead": "pmo",
+  "Business Analyst": "pmo",
+  "Frontend Developer": "pmo",
+  "Backend Developer": "pmo",
+  "Full-stack Developer": "pmo",
+  "UI/UX Designer": "pmo",
+  "QA Engineer": "pmo",
+  "DevOps Engineer": "pmo",
 };
 
 export interface WorkspaceUserLike {

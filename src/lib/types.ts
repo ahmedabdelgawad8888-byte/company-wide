@@ -62,6 +62,16 @@ export type RoleName =
   | "Data Analyst"
   | "Quality"
   | "IT Admin"
+  | "PMO Lead"
+  | "Product Manager"
+  | "Tech Lead"
+  | "Business Analyst"
+  | "Frontend Developer"
+  | "Backend Developer"
+  | "Full-stack Developer"
+  | "UI/UX Designer"
+  | "QA Engineer"
+  | "DevOps Engineer"
   | "Viewer";
 
 export interface RoleDef {
@@ -637,4 +647,160 @@ export interface AppSettings {
     includeArchivedInExports: boolean;
     backupCadence: Cadence;
   };
+}
+
+/* ── PMO / Dev & Business Analysis types ─────────────────────────────────── */
+
+export type PmoDocStatus = "DONE" | "NEW" | "TBC";
+export type PmoStatus =
+  "Verify & Close" | "Not Started" | "In Progress" | "Blocked - Clarification" | "Done";
+export type PmoPriority = "P0" | "P1" | "P2";
+export type PmoSize = "S" | "M" | "L" | "XL";
+export type PmoWave = "W0" | "W1" | "W2" | "W3" | "W4" | "W5" | "W6";
+export type PmoOwnerRole =
+  | "Product/BA"
+  | "UI/UX"
+  | "Backend"
+  | "Frontend"
+  | "Full-stack"
+  | "Data/BI"
+  | "DevOps"
+  | "QA"
+  | "Ops"
+  | "Management";
+
+export interface PmoRequirement {
+  id: string;
+  module: string;
+  moduleAr: string;
+  docNumber: number;
+  title: string;
+  titleAr: string;
+  description: string;
+  docStatus: PmoDocStatus;
+  pmoStatus: PmoStatus;
+  priority: PmoPriority;
+  size: PmoSize;
+  effortDays: number;
+  wave: PmoWave;
+  waveName: string;
+  ownerRole: PmoOwnerRole;
+  e2eStage: string;
+  startDate?: string;
+  etaDate?: string;
+  etaWeek?: string;
+  durationDays: number;
+  dependencies: string[];
+  acceptanceCriteria: string;
+  clarificationNeeded?: string;
+  percentDone: number;
+  rag?: "green" | "amber" | "red";
+  notes?: string;
+}
+
+export interface PmoE2EStage {
+  id: number;
+  name: string;
+  description: string;
+  modulesInvolved: string;
+  reqCount: number;
+  effortDays: number;
+  startDate?: string;
+  finishDate?: string;
+  weeks: number;
+  primaryOwner: PmoOwnerRole;
+  entryCriteria: string;
+  exitCriteria: string;
+  rag?: "green" | "amber" | "red";
+}
+
+export type PmoMilestoneStatus = "Not Started" | "In Progress" | "Completed" | "At Risk";
+
+export interface PmoMilestone {
+  id: string;
+  name: string;
+  wave: PmoWave;
+  forecastDate?: string;
+  gateCriteria: string;
+  owner: string;
+  status: PmoMilestoneStatus;
+  daysFromKickoff?: number;
+}
+
+export type RaidType = "Risk" | "Assumption" | "Issue" | "Dependency";
+export type RaidSeverity = "High" | "Medium" | "Low";
+export type RaidStatus = "Open" | "Mitigated" | "Closed" | "Accepted";
+
+export interface PmoRaidItem {
+  id: string;
+  type: RaidType;
+  description: string;
+  impact: RaidSeverity;
+  likelihood: RaidSeverity;
+  severity: RaidSeverity;
+  mitigation: string;
+  owner: string;
+  status: RaidStatus;
+  relatedReqs: string[];
+}
+
+export type PmoActionType = "Governance" | "Decision" | "Clarification" | "Dependency" | "Delivery";
+export type PmoActionStatus = "Open" | "In Progress" | "Closed" | "Blocked";
+
+export interface PmoAction {
+  id: string;
+  relatedReq?: string;
+  action: string;
+  type: PmoActionType;
+  owner: string;
+  raisedDate: string;
+  dueDate: string;
+  priority: PmoPriority;
+  status: PmoActionStatus;
+  notes?: string;
+}
+
+export interface PmoQuestion {
+  kind?: string;
+  questionAr?: string;
+  whyItMatters?: string;
+  impactIfUnresolved?: string;
+  id: string;
+  relatedReq?: string;
+  question: string;
+  impact: string;
+  owner: string;
+  raisedDate: string;
+  dueDate?: string;
+  status: "Open" | "Answered" | "Deferred";
+  answer?: string;
+}
+
+export interface PmoCapacityByOwner {
+  ownerRole: PmoOwnerRole;
+  reqCount: number;
+  effortDays: number;
+  windowDays: number;
+  loadPercent: number;
+  firstStart?: string;
+  lastEta?: string;
+  avgPercentDone: number;
+}
+
+export interface PmoCapacityByWave {
+  wave: PmoWave;
+  window: string;
+  reqCount: number;
+  effortDays: number;
+  doneCount: number;
+  newCount: number;
+  tbcCount: number;
+  avgPercentDone: number;
+}
+
+export interface PmoPlanConfig {
+  planStartDate: string;
+  workingDaysPerWeek: number;
+  programDurationWeeks: number;
+  effortSizes: Record<PmoSize, number>;
 }

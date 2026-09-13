@@ -60,6 +60,7 @@ const work: Record<WorkspaceId, Module[]> = {
     "meeting",
   ],
   it: ["routine", "task", "project", "process", "sop", "blocker", "data-issue", "meeting"],
+  pmo: ["project", "task", "decision", "blocker", "request", "data-issue", "meeting"],
 };
 export const modulePath = (w: WorkspaceId, m: Module) => `/workspaces/${w}/${m}`;
 export const validModules = (w: WorkspaceId): Module[] => [
@@ -80,6 +81,25 @@ export const validModules = (w: WorkspaceId): Module[] => [
 ];
 export function hubNav(w: WorkspaceId) {
   return [
+    ...(w === "pmo"
+      ? [
+          {
+            label: "Workbook · Dev & Business Analysis",
+            labelAr: "ملف التطوير وتحليل الأعمال",
+            items: [
+              ["/pmo", "PMO Dashboard", "لوحة PMO"],
+              ["/pmo/requirements", "Requirements Register", "سجل المتطلبات"],
+              ["/pmo/timeline", "Timeline", "الجدول الزمني"],
+              ["/pmo/e2e", "E2E View", "المراحل الشاملة"],
+              ["/pmo/milestones", "Milestones", "المراحل الرئيسية"],
+              ["/pmo/actions", "Actions Log", "سجل الإجراءات"],
+              ["/pmo/raid", "RAID Log", "سجل المخاطر"],
+              ["/pmo/questions", "Open Questions", "الأسئلة المفتوحة"],
+              ["/pmo/capacity", "Effort & Capacity", "الجهد والقدرة"],
+            ].map(([to, label, labelAr]) => ({ to: to!, label: label!, labelAr: labelAr! })),
+          },
+        ]
+      : []),
     {
       label: "Workspace",
       labelAr: "مساحة العمل",

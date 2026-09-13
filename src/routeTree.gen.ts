@@ -52,6 +52,15 @@ import { Route as FinanceExpensesRouteImport } from './routes/finance/expenses'
 import { Route as FinanceFxRouteImport } from './routes/finance/fx'
 import { Route as FinanceInvoicesRouteImport } from './routes/finance/invoices'
 import { Route as FinancePaymentsRouteImport } from './routes/finance/payments'
+import { Route as PmoIndexRouteImport } from './routes/pmo/index'
+import { Route as PmoActionsRouteImport } from './routes/pmo/actions'
+import { Route as PmoCapacityRouteImport } from './routes/pmo/capacity'
+import { Route as PmoE2eRouteImport } from './routes/pmo/e2e'
+import { Route as PmoMilestonesRouteImport } from './routes/pmo/milestones'
+import { Route as PmoQuestionsRouteImport } from './routes/pmo/questions'
+import { Route as PmoRaidRouteImport } from './routes/pmo/raid'
+import { Route as PmoRequirementsRouteImport } from './routes/pmo/requirements'
+import { Route as PmoTimelineRouteImport } from './routes/pmo/timeline'
 import { Route as ApiAgentChatRouteImport } from './routes/api.agent.chat'
 import { Route as ApiAgentModelsRouteImport } from './routes/api.agent.models'
 import { Route as ApiAgentStatusRouteImport } from './routes/api.agent.status'
@@ -275,6 +284,51 @@ const FinancePaymentsRoute = FinancePaymentsRouteImport.update({
   path: '/finance/payments',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PmoIndexRoute = PmoIndexRouteImport.update({
+  id: '/pmo/',
+  path: '/pmo/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PmoActionsRoute = PmoActionsRouteImport.update({
+  id: '/pmo/actions',
+  path: '/pmo/actions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PmoCapacityRoute = PmoCapacityRouteImport.update({
+  id: '/pmo/capacity',
+  path: '/pmo/capacity',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PmoE2eRoute = PmoE2eRouteImport.update({
+  id: '/pmo/e2e',
+  path: '/pmo/e2e',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PmoMilestonesRoute = PmoMilestonesRouteImport.update({
+  id: '/pmo/milestones',
+  path: '/pmo/milestones',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PmoQuestionsRoute = PmoQuestionsRouteImport.update({
+  id: '/pmo/questions',
+  path: '/pmo/questions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PmoRaidRoute = PmoRaidRouteImport.update({
+  id: '/pmo/raid',
+  path: '/pmo/raid',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PmoRequirementsRoute = PmoRequirementsRouteImport.update({
+  id: '/pmo/requirements',
+  path: '/pmo/requirements',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PmoTimelineRoute = PmoTimelineRouteImport.update({
+  id: '/pmo/timeline',
+  path: '/pmo/timeline',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAgentChatRoute = ApiAgentChatRouteImport.update({
   id: '/api/agent/chat',
   path: '/api/agent/chat',
@@ -353,9 +407,18 @@ export interface FileRoutesByFullPath {
   '/finance/fx': typeof FinanceFxRoute
   '/finance/invoices': typeof FinanceInvoicesRoute
   '/finance/payments': typeof FinancePaymentsRoute
+  '/pmo/actions': typeof PmoActionsRoute
+  '/pmo/capacity': typeof PmoCapacityRoute
+  '/pmo/e2e': typeof PmoE2eRoute
+  '/pmo/milestones': typeof PmoMilestonesRoute
+  '/pmo/questions': typeof PmoQuestionsRoute
+  '/pmo/raid': typeof PmoRaidRoute
+  '/pmo/requirements': typeof PmoRequirementsRoute
+  '/pmo/timeline': typeof PmoTimelineRoute
   '/campaigns/': typeof CampaignsIndexRoute
   '/crm/': typeof CrmIndexRoute
   '/finance/': typeof FinanceIndexRoute
+  '/pmo/': typeof PmoIndexRoute
   '/api/agent/chat': typeof ApiAgentChatRoute
   '/api/agent/models': typeof ApiAgentModelsRoute
   '/api/agent/status': typeof ApiAgentStatusRoute
@@ -405,9 +468,18 @@ export interface FileRoutesByTo {
   '/finance/fx': typeof FinanceFxRoute
   '/finance/invoices': typeof FinanceInvoicesRoute
   '/finance/payments': typeof FinancePaymentsRoute
+  '/pmo/actions': typeof PmoActionsRoute
+  '/pmo/capacity': typeof PmoCapacityRoute
+  '/pmo/e2e': typeof PmoE2eRoute
+  '/pmo/milestones': typeof PmoMilestonesRoute
+  '/pmo/questions': typeof PmoQuestionsRoute
+  '/pmo/raid': typeof PmoRaidRoute
+  '/pmo/requirements': typeof PmoRequirementsRoute
+  '/pmo/timeline': typeof PmoTimelineRoute
   '/campaigns': typeof CampaignsIndexRoute
   '/crm': typeof CrmIndexRoute
   '/finance': typeof FinanceIndexRoute
+  '/pmo': typeof PmoIndexRoute
   '/api/agent/chat': typeof ApiAgentChatRoute
   '/api/agent/models': typeof ApiAgentModelsRoute
   '/api/agent/status': typeof ApiAgentStatusRoute
@@ -458,9 +530,18 @@ export interface FileRoutesById {
   '/finance/fx': typeof FinanceFxRoute
   '/finance/invoices': typeof FinanceInvoicesRoute
   '/finance/payments': typeof FinancePaymentsRoute
+  '/pmo/actions': typeof PmoActionsRoute
+  '/pmo/capacity': typeof PmoCapacityRoute
+  '/pmo/e2e': typeof PmoE2eRoute
+  '/pmo/milestones': typeof PmoMilestonesRoute
+  '/pmo/questions': typeof PmoQuestionsRoute
+  '/pmo/raid': typeof PmoRaidRoute
+  '/pmo/requirements': typeof PmoRequirementsRoute
+  '/pmo/timeline': typeof PmoTimelineRoute
   '/campaigns/': typeof CampaignsIndexRoute
   '/crm/': typeof CrmIndexRoute
   '/finance/': typeof FinanceIndexRoute
+  '/pmo/': typeof PmoIndexRoute
   '/api/agent/chat': typeof ApiAgentChatRoute
   '/api/agent/models': typeof ApiAgentModelsRoute
   '/api/agent/status': typeof ApiAgentStatusRoute
@@ -512,9 +593,18 @@ export interface FileRouteTypes {
     | '/finance/fx'
     | '/finance/invoices'
     | '/finance/payments'
+    | '/pmo/actions'
+    | '/pmo/capacity'
+    | '/pmo/e2e'
+    | '/pmo/milestones'
+    | '/pmo/questions'
+    | '/pmo/raid'
+    | '/pmo/requirements'
+    | '/pmo/timeline'
     | '/campaigns/'
     | '/crm/'
     | '/finance/'
+    | '/pmo/'
     | '/api/agent/chat'
     | '/api/agent/models'
     | '/api/agent/status'
@@ -564,9 +654,18 @@ export interface FileRouteTypes {
     | '/finance/fx'
     | '/finance/invoices'
     | '/finance/payments'
+    | '/pmo/actions'
+    | '/pmo/capacity'
+    | '/pmo/e2e'
+    | '/pmo/milestones'
+    | '/pmo/questions'
+    | '/pmo/raid'
+    | '/pmo/requirements'
+    | '/pmo/timeline'
     | '/campaigns'
     | '/crm'
     | '/finance'
+    | '/pmo'
     | '/api/agent/chat'
     | '/api/agent/models'
     | '/api/agent/status'
@@ -616,9 +715,18 @@ export interface FileRouteTypes {
     | '/finance/fx'
     | '/finance/invoices'
     | '/finance/payments'
+    | '/pmo/actions'
+    | '/pmo/capacity'
+    | '/pmo/e2e'
+    | '/pmo/milestones'
+    | '/pmo/questions'
+    | '/pmo/raid'
+    | '/pmo/requirements'
+    | '/pmo/timeline'
     | '/campaigns/'
     | '/crm/'
     | '/finance/'
+    | '/pmo/'
     | '/api/agent/chat'
     | '/api/agent/models'
     | '/api/agent/status'
@@ -668,9 +776,18 @@ export interface RootRouteChildren {
   FinanceFxRoute: typeof FinanceFxRoute
   FinanceInvoicesRoute: typeof FinanceInvoicesRoute
   FinancePaymentsRoute: typeof FinancePaymentsRoute
+  PmoActionsRoute: typeof PmoActionsRoute
+  PmoCapacityRoute: typeof PmoCapacityRoute
+  PmoE2eRoute: typeof PmoE2eRoute
+  PmoMilestonesRoute: typeof PmoMilestonesRoute
+  PmoQuestionsRoute: typeof PmoQuestionsRoute
+  PmoRaidRoute: typeof PmoRaidRoute
+  PmoRequirementsRoute: typeof PmoRequirementsRoute
+  PmoTimelineRoute: typeof PmoTimelineRoute
   CampaignsIndexRoute: typeof CampaignsIndexRoute
   CrmIndexRoute: typeof CrmIndexRoute
   FinanceIndexRoute: typeof FinanceIndexRoute
+  PmoIndexRoute: typeof PmoIndexRoute
   ApiAgentChatRoute: typeof ApiAgentChatRoute
   ApiAgentModelsRoute: typeof ApiAgentModelsRoute
   ApiAgentStatusRoute: typeof ApiAgentStatusRoute
@@ -983,6 +1100,69 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FinancePaymentsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pmo/': {
+      id: '/pmo/'
+      path: '/pmo'
+      fullPath: '/pmo/'
+      preLoaderRoute: typeof PmoIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pmo/actions': {
+      id: '/pmo/actions'
+      path: '/pmo/actions'
+      fullPath: '/pmo/actions'
+      preLoaderRoute: typeof PmoActionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pmo/capacity': {
+      id: '/pmo/capacity'
+      path: '/pmo/capacity'
+      fullPath: '/pmo/capacity'
+      preLoaderRoute: typeof PmoCapacityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pmo/e2e': {
+      id: '/pmo/e2e'
+      path: '/pmo/e2e'
+      fullPath: '/pmo/e2e'
+      preLoaderRoute: typeof PmoE2eRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pmo/milestones': {
+      id: '/pmo/milestones'
+      path: '/pmo/milestones'
+      fullPath: '/pmo/milestones'
+      preLoaderRoute: typeof PmoMilestonesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pmo/questions': {
+      id: '/pmo/questions'
+      path: '/pmo/questions'
+      fullPath: '/pmo/questions'
+      preLoaderRoute: typeof PmoQuestionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pmo/raid': {
+      id: '/pmo/raid'
+      path: '/pmo/raid'
+      fullPath: '/pmo/raid'
+      preLoaderRoute: typeof PmoRaidRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pmo/requirements': {
+      id: '/pmo/requirements'
+      path: '/pmo/requirements'
+      fullPath: '/pmo/requirements'
+      preLoaderRoute: typeof PmoRequirementsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pmo/timeline': {
+      id: '/pmo/timeline'
+      path: '/pmo/timeline'
+      fullPath: '/pmo/timeline'
+      preLoaderRoute: typeof PmoTimelineRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/agent/chat': {
       id: '/api/agent/chat'
       path: '/api/agent/chat'
@@ -1085,9 +1265,18 @@ const rootRouteChildren: RootRouteChildren = {
   FinanceFxRoute: FinanceFxRoute,
   FinanceInvoicesRoute: FinanceInvoicesRoute,
   FinancePaymentsRoute: FinancePaymentsRoute,
+  PmoActionsRoute: PmoActionsRoute,
+  PmoCapacityRoute: PmoCapacityRoute,
+  PmoE2eRoute: PmoE2eRoute,
+  PmoMilestonesRoute: PmoMilestonesRoute,
+  PmoQuestionsRoute: PmoQuestionsRoute,
+  PmoRaidRoute: PmoRaidRoute,
+  PmoRequirementsRoute: PmoRequirementsRoute,
+  PmoTimelineRoute: PmoTimelineRoute,
   CampaignsIndexRoute: CampaignsIndexRoute,
   CrmIndexRoute: CrmIndexRoute,
   FinanceIndexRoute: FinanceIndexRoute,
+  PmoIndexRoute: PmoIndexRoute,
   ApiAgentChatRoute: ApiAgentChatRoute,
   ApiAgentModelsRoute: ApiAgentModelsRoute,
   ApiAgentStatusRoute: ApiAgentStatusRoute,

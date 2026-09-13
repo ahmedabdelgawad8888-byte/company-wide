@@ -61,9 +61,20 @@ export function Section({
   );
 }
 
-export function Panel({ children, className }: { children: ReactNode; className?: string }) {
+export function Panel({
+  children,
+  className,
+  onClick,
+}: {
+  children: ReactNode;
+  className?: string;
+  onClick?: () => void;
+}) {
   return (
-    <div className={cn("rounded-xl border bg-card p-5 shadow-[var(--shadow-panel)]", className)}>
+    <div
+      className={cn("rounded-xl border bg-card p-5 shadow-[var(--shadow-panel)]", className)}
+      onClick={onClick}
+    >
       {children}
     </div>
   );

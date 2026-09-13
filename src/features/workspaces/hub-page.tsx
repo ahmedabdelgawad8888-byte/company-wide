@@ -36,6 +36,7 @@ const homeTitles: Record<WorkspaceId, [string, string]> = {
   finance: ["My Finance Day", "يومي في الحسابات"],
   hr: ["People Operations Today", "عمليات الموظفين اليوم"],
   it: ["IT Operations Control Room", "غرفة عمليات تقنية المعلومات"],
+  pmo: ["PMO Dashboard", "لوحة مكتب إدارة المشاريع"],
 };
 const levelTitle = (value: "member" | "supervisor" | "lead"): [string, string] =>
   value === "lead"
@@ -49,6 +50,7 @@ const defaultKind: Record<WorkspaceId, Kind> = {
   finance: "bill",
   hr: "people-action",
   it: "routine",
+  pmo: "project",
 };
 export function HubPage({
   workspaceId,

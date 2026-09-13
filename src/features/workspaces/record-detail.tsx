@@ -254,6 +254,21 @@ export function RecordDetail({ recordId, onClose }: { recordId: string; onClose:
                     </div>
                   ))}
               </dl>
+              {r.details["sourceSheet"] && (
+                <section className="rounded-lg border p-4">
+                  <h2 className="mb-3 font-semibold">Excel source · {r.details["sourceSheet"]}</h2>
+                  <dl className="space-y-3 text-sm">
+                    {Object.entries(r.details)
+                      .filter(([, value]) => value !== "")
+                      .map(([key, value]) => (
+                        <div key={key} className="grid gap-2 sm:grid-cols-[180px_1fr]">
+                          <dt className="text-muted-foreground">{key}</dt>
+                          <dd className="whitespace-pre-wrap break-words">{value}</dd>
+                        </div>
+                      ))}
+                  </dl>
+                </section>
+              )}
               {r.collaborators.length > 0 && (
                 <p className="text-sm">
                   {t("Collaborators", "المشاركون")}:{" "}

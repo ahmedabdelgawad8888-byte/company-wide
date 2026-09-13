@@ -62,6 +62,7 @@ const QUICK_CREATE_BY_WORKSPACE: Record<WorkspaceId, QuickCreateKind[]> = {
   finance: ["bill", "payment", "task", "meeting"],
   hr: ["employee", "people-action", "interview", "onboarding", "task", "meeting"],
   it: ["routine", "task", "project", "process", "sop", "blocker", "data-issue", "meeting"],
+  pmo: ["project", "task", "decision", "blocker", "request", "data-issue", "meeting"],
 };
 
 function workspaceSearchText(workspaceId: WorkspaceId, t: (en: string, ar: string) => string) {
@@ -84,6 +85,11 @@ function workspaceSearchText(workspaceId: WorkspaceId, t: (en: string, ar: strin
     return t(
       "Search routines, incidents, infrastructure, SOPs and IT work…",
       "ابحث في الإجراءات الدورية والحوادث والبنية التحتية وإجراءات التشغيل وأعمال تقنية المعلومات…",
+    );
+  if (workspaceId === "pmo")
+    return t(
+      "Search waves, requirements, milestones, RAID, actions and questions…",
+      "ابحث في الموجات والمتطلبات والمراحل والمخاطر والإجراءات والأسئلة…",
     );
   return t(
     "Search priorities, blockers, decisions, analysis requests and people…",

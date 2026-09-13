@@ -6,6 +6,7 @@ import { seedHub } from "./seed";
 import { emptyState, sweep, visible } from "./service";
 import { today, type Actor, type HubState } from "./model";
 import { ensureITWorkspace } from "./it-seed";
+import { ensurePmoWorkspace, pmoOwners } from "./pmo-seed";
 
 type HubContext = {
   state: HubState;
@@ -45,7 +46,7 @@ export function HubProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState("");
   // Every actor carries the ids of everyone below them in the workspace hierarchy,
   // so record visibility can be resolved without re-walking the directory each time.
-  const users = withReportIds(db.users);
+  const users = withReportIds([...db.users, ...pmoOwners]);
   const actor = users.find((u) => u.id === currentUser.id) ?? currentUser;
   const initialDb = useRef(db);
   const reload = () => {
@@ -54,10 +55,14 @@ export function HubProvider({ children }: { children: ReactNode }) {
       const stored = repo.current.load();
       const next = stored ?? seedHub(initialDb.current);
       if (!stored) repo.current.save(next, 0);
-      else if (ensureITWorkspace(next, users)) {
-        const previousRevision = next.revision;
-        next.revision += 1;
-        repo.current.save(next, previousRevision);
+      else {
+        const itAdded = ensureITWorkspace(next, users);
+        const pmoAdded = ensurePmoWorkspace(next, users);
+        if (itAdded || pmoAdded) {
+          const previousRevision = next.revision;
+          next.revision += 1;
+          repo.current.save(next, previousRevision);
+        }
       }
       latest.current = next;
       setState(next);

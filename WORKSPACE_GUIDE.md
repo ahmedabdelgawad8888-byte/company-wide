@@ -1,6 +1,6 @@
 # TryGC Workspace Guide
 
-The hub is organised as **five separate workspaces**. Every person belongs to exactly
+The hub is organised as **six separate workspaces**. Every person belongs to exactly
 one of them. Only Management (Group Admin / Executive Management) sees every workspace.
 
 ## Visibility model
@@ -73,6 +73,23 @@ approvals, analysis requests, automation and full oversight of Sales, Finance, H
 
 **Working rule:** recurring controls have one persistent definition and separate execution history. Proposed schedules remain labelled Proposed until management approves them.
 
+## PMO Workspace
+
+**Source of truth:** `TryGC_PMO_Dashboard.xlsx`. All 97 requirements and all action,
+question, RAID, milestone and E2E records are imported with their original owner
+labels. These labels represent the workbook's responsibilities, not demo people.
+The earlier generated PMO roster and manually seeded wave records are superseded.
+Use the workbook links at the top of the PMO sidebar for the source registers;
+workspace tasks and record details retain source IDs and all original source fields.
+
+**Purpose:** track product requirements, delivery milestones, RAID, capacity and end-to-end value-stream visibility for the development and BA team.
+
+**Navigation:** PMO Home · Dashboard · Requirements · Timeline (Gantt) · E2E View · Milestones · Actions Log · RAID Log · Open Questions · Effort & Capacity · Delivery Calendar · Reports · Activity
+
+**Record types:** Project (one per delivery wave W0–W6) · Task (key requirements, traced by requirement id) · Decision (open management clarifications) · Blocker (RAID issues) · Analysis Request · Data Issue · Meeting · File · Approval
+
+**Working rule:** waves gate on evidence — a wave closes only when its milestone criteria are met and every clarification blocking the next wave has an owner and a due date. Hub records are seeded from the delivery plan (`src/lib/data/pmo-seed.ts`) via `src/features/workspaces/pmo-seed.ts`.
+
 ## Commission Calculator
 
 Sales and Finance each carry a commission engine at `/workspaces/<sales|finance>/commission`.
@@ -108,11 +125,12 @@ The engine is `src/features/workspaces/commission.ts` (pure maths, covered by
 
 ## Seeded hierarchy (demo data)
 
-| Workspace  | Lead                                           | Supervisors                                                             | Members                                                                          |
-| ---------- | ---------------------------------------------- | ----------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| Management | Ahmed Abdelgawad, Rana Al-Otaibi, Ahmed Essmat | Omar Shalaby, Hessa Al-Sabah, Bader Al-Qahtani, Amr, Data Analysis Lead | Mariam Zaki, Tarek Nabil, Alaa, Abdel Fattah, Sabry, Ahmed Ismail, Ahmed — UI/UX |
-| Sales      | Faisal Al-Harbi                                | Youssef Adel                                                            | Layla Mansour, Sara Al-Dossary, Dina Salem                                       |
-| Finance    | Mostafa Kamel                                  | —                                                                       | Nourhan Fathy                                                                    |
-| HR         | HR Team Lead                                   | —                                                                       | Hala Nasser                                                                      |
+| Workspace  | Lead                                           | Supervisors                                                             | Members                                                                                                       |
+| ---------- | ---------------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Management | Ahmed Abdelgawad, Rana Al-Otaibi, Ahmed Essmat | Omar Shalaby, Hessa Al-Sabah, Bader Al-Qahtani, Amr, Data Analysis Lead | Mariam Zaki, Tarek Nabil, Alaa, Abdel Fattah, Sabry, Ahmed Ismail, Ahmed — UI/UX                              |
+| Sales      | Faisal Al-Harbi                                | Youssef Adel                                                            | Layla Mansour, Sara Al-Dossary, Dina Salem                                                                    |
+| Finance    | Mostafa Kamel                                  | —                                                                       | Nourhan Fathy                                                                                                 |
+| HR         | HR Team Lead                                   | —                                                                       | Hala Nasser                                                                                                   |
+| PMO        | Kareem Hassan                                  | Mohamed Sayed, Noura Al-Qahtani                                         | Salma Farouk, Yasser Mahmoud, Khaled Ibrahim, Eman Khalil, Dalia Mostafa, Ali Hassan, Tamer Adel, Rania Ahmed |
 
 Use the **Switch demo user** menu in the profile dropdown to see the model in action.

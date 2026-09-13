@@ -4,6 +4,7 @@ import { dayOffset, statuses, today } from "./model";
 import { emptyState } from "./service";
 import type { Task, Invoice, Client, CalendarEvent } from "../../lib/types";
 import { ensureITWorkspace } from "./it-seed";
+import { ensurePmoWorkspace } from "./pmo-seed";
 
 export function seedHub(db: {
   users: Actor[];
@@ -306,5 +307,6 @@ export function seedHub(db: {
     });
   }
   ensureITWorkspace(s, db.users);
+  ensurePmoWorkspace(s, db.users);
   return s;
 }

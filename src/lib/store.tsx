@@ -9,6 +9,7 @@ import {
 } from "react";
 import * as seed from "./data/seed";
 import * as collab from "./data/collab-seed";
+import * as pmo from "./data/pmo-seed";
 import { addDays, dueReminders, nextRun } from "./calendar";
 import type { WorkspaceId } from "./workspace-hub";
 import { getWorkspaceIdsForUser } from "./workspace-hub";
@@ -47,6 +48,13 @@ import type {
   Task,
   TaskStatus,
   User,
+  PmoRequirement,
+  PmoE2EStage,
+  PmoMilestone,
+  PmoRaidItem,
+  PmoAction,
+  PmoQuestion,
+  PmoPlanConfig,
 } from "./types";
 
 export type Scope = "group" | string;
@@ -82,11 +90,19 @@ interface DB {
   chatChannels: ChatChannel[];
   chatMessages: ChatMessage[];
   settings: AppSettings;
+  // PMO workspace data
+  pmoRequirements: PmoRequirement[];
+  pmoE2EStages: PmoE2EStage[];
+  pmoMilestones: PmoMilestone[];
+  pmoRaidItems: PmoRaidItem[];
+  pmoActions: PmoAction[];
+  pmoQuestions: PmoQuestion[];
+  pmoPlanConfig: PmoPlanConfig;
 }
 
 const initialDb: DB = {
   entities: seed.entities,
-  users: seed.users,
+  users: seed.users.filter((u) => u.workspaceId !== "pmo"),
   roles: seed.roles,
   clients: seed.clients,
   contacts: seed.contacts,
@@ -115,6 +131,14 @@ const initialDb: DB = {
   chatChannels: collab.chatChannels,
   chatMessages: collab.chatMessages,
   settings: collab.defaultSettings,
+  // PMO workspace data
+  pmoRequirements: pmo.pmoRequirements,
+  pmoE2EStages: pmo.pmoE2EStages,
+  pmoMilestones: pmo.pmoMilestones,
+  pmoRaidItems: pmo.pmoRaidItems,
+  pmoActions: pmo.pmoActions,
+  pmoQuestions: pmo.pmoQuestions,
+  pmoPlanConfig: pmo.pmoPlanConfig,
 };
 
 function nowStamp() {
@@ -237,9 +261,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const raw = window.localStorage.getItem("trygc-workspace-hub-db-v1");
       if (raw) {
         const saved = JSON.parse(raw) as Partial<DB>;
+        // Preserve the previous baseline and any local changes before reconciliation.
+        if (!window.localStorage.getItem("trygc-pmo-before-excel-v1"))
+          window.localStorage.setItem("trygc-pmo-before-excel-v1", raw);
         setDb((prev) => ({
           ...prev,
           ...saved,
+          users: (saved.users ?? prev.users).filter(
+            (u) => u.workspaceId !== "pmo" || !seed.users.some((s) => s.id === u.id),
+          ),
+          pmoRequirements: pmo.pmoRequirements,
+          pmoE2EStages: pmo.pmoE2EStages,
+          pmoMilestones: pmo.pmoMilestones,
+          pmoRaidItems: pmo.pmoRaidItems,
+          pmoActions: pmo.pmoActions,
+          pmoQuestions: pmo.pmoQuestions,
+          pmoPlanConfig: pmo.pmoPlanConfig,
           settings: { ...prev.settings, ...(saved.settings ?? {}) },
         }));
       }
