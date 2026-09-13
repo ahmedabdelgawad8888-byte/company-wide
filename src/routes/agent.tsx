@@ -38,6 +38,11 @@ import {
 import { AgentMessageRenderer, parseAgentMessage } from "../features/agent/agent-blocks";
 import { AgentHistory } from "../features/agent/agent-history";
 import { useConversations, type AgentMessage } from "../features/agent/use-conversations";
+import {
+  CONTINUE_PROMPT,
+  MAX_CONTINUATIONS,
+  joinContinuation,
+} from "../features/agent/continuation";
 
 type Attachment = { name: string; content: string; size: number };
 type Message = AgentMessage;
@@ -91,30 +96,69 @@ function AgentPage() {
     [workspace, actor, rows, users],
   );
 
+  /** One call to the chat endpoint. `continuation` resumes a reply cut off at the limit. */
+  const callAgent = async (payloadMessages: Message[], continuation = false) => {
+    const response = await fetch("/api/agent/chat", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        providerId: settings.providerId,
+        modelId: settings.modelId,
+        apiKey: settings.activeKey,
+        baseURL: settings.activeBaseUrl,
+        configured: settings.configuredProviderIds,
+        baseUrls: settings.baseUrlMap,
+        workspaceContext: context,
+        messages: payloadMessages,
+        continuation,
+      }),
+    });
+    const payload = (await response.json()) as {
+      text?: string;
+      error?: string;
+      finishReason?: string;
+    };
+    if (!response.ok || !payload.text)
+      throw new Error(payload.error ?? "The agent did not return an answer.");
+    return payload;
+  };
+
   const requestAgent = async (next: Message[]) => {
     if (sending) return;
     setMessages(next);
     setSending(true);
     setError(null);
     try {
-      const response = await fetch("/api/agent/chat", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          providerId: settings.providerId,
-          modelId: settings.modelId,
-          apiKey: settings.activeKey,
-          baseURL: settings.activeBaseUrl,
-          configured: settings.configuredProviderIds,
-          baseUrls: settings.baseUrlMap,
-          workspaceContext: context,
-          messages: next,
-        }),
-      });
-      const payload = (await response.json()) as { text?: string; error?: string };
-      if (!response.ok || !payload.text)
-        throw new Error(payload.error ?? "The agent did not return an answer.");
-      const settled: Message[] = [...next, { role: "assistant", content: payload.text }];
+      const first = await callAgent(next);
+      let answer = first.text ?? "";
+      let finishReason = first.finishReason;
+
+      // Show the first part immediately, then keep resuming so a long reply is not
+      // left truncated mid-sentence. Each round is appended to the same message.
+      setMessages([...next, { role: "assistant", content: answer }]);
+
+      for (let round = 0; round < MAX_CONTINUATIONS && finishReason === "length"; round += 1) {
+        const resumed = await callAgent(
+          [
+            ...next,
+            { role: "assistant", content: answer },
+            { role: "user", content: CONTINUE_PROMPT },
+          ],
+          true,
+        );
+        const addition = resumed.text ?? "";
+        if (!addition.trim()) break;
+        answer = joinContinuation(answer, addition);
+        finishReason = resumed.finishReason;
+        setMessages([...next, { role: "assistant", content: answer }]);
+      }
+
+      if (finishReason === "length")
+        setError(
+          "The answer was still running when it reached the length limit. Ask the agent to continue for the rest.",
+        );
+
+      const settled: Message[] = [...next, { role: "assistant", content: answer }];
       setMessages(settled);
       history.save(settled, { provider: settings.provider.name, model: settings.modelId });
     } catch (cause) {

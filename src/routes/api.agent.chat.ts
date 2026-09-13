@@ -5,7 +5,18 @@ import { formatModelError, resolveAgentModel, type ModelRequest } from "../lib/a
 interface ChatBody extends ModelRequest {
   messages?: Array<{ role: "user" | "assistant"; content: string }>;
   workspaceContext?: string;
+  /** Set when resuming a reply that stopped at the token ceiling. */
+  continuation?: boolean;
 }
+
+/**
+ * The system prompt asks for metric tiles, a chart, a deep-dive, a table and an
+ * action plan. That does not fit in a small budget, and the old 2000-token ceiling
+ * truncated answers mid-sentence — which reads as the agent disconnecting. The
+ * client resumes from `finishReason === "length"`, so this is a per-turn budget
+ * rather than a limit on the total answer.
+ */
+const MAX_OUTPUT_TOKENS = 8000;
 
 export const Route = createFileRoute("/api/agent/chat")({
   server: {
@@ -16,9 +27,11 @@ export const Route = createFileRoute("/api/agent/chat")({
         if ("error" in resolved)
           return Response.json({ error: resolved.error, ready: resolved.ready }, { status: 400 });
 
+        // A continuation carries the partial answer plus a resume instruction, so it
+        // needs more room than a normal turn before older context is dropped.
         const messages = (body.messages ?? [])
           .filter((message) => message.content.trim())
-          .slice(-20) as ModelMessage[];
+          .slice(body.continuation ? -24 : -20) as ModelMessage[];
         if (!messages.length)
           return Response.json({ error: "Send a message first." }, { status: 400 });
 
@@ -73,14 +86,23 @@ export const Route = createFileRoute("/api/agent/chat")({
             "WORKSPACE CONTEXT:\n" +
             (body.workspaceContext ?? "No workspace context supplied.");
 
+          const continuationRule = body.continuation
+            ? "\n\nCONTINUATION MODE:\nYou are resuming a reply that was cut off at the token limit. " +
+              "Continue from exactly where the previous message stopped — mid-sentence if that is where it ended. " +
+              "Do not repeat any content already written, do not restate earlier sections, and do not open with a preamble."
+            : "";
+
           const result = await generateText({
             model: resolved.model,
-            system: systemPrompt,
+            system: systemPrompt + continuationRule,
             messages,
-            maxOutputTokens: 2000,
+            maxOutputTokens: MAX_OUTPUT_TOKENS,
           });
           return Response.json({
             text: result.text,
+            // "length" means the ceiling was hit and the answer is incomplete; the
+            // client uses this to resume rather than leaving a half-written reply.
+            finishReason: result.finishReason,
             provider: resolved.providerId,
             model: resolved.modelId,
           });

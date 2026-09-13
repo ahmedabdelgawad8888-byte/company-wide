@@ -142,7 +142,12 @@ function RootShell({ children }: { children: ReactNode }) {
       <body>
         {children}
         <Scripts />
-        <Analytics />
+        {/*
+          Vercel Analytics fetches /_vercel/insights/script.js, which only exists when the
+          app is served by Vercel. This build targets Cloudflare, so leaving it on made
+          every page load 404 in the console. Opt in with VITE_ENABLE_ANALYTICS=true.
+        */}
+        {import.meta.env["VITE_ENABLE_ANALYTICS"] === "true" ? <Analytics /> : null}
       </body>
     </html>
   );

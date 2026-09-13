@@ -88,6 +88,7 @@ export function QuickCreate({
   const navigate = useNavigate();
   const workspace = getWorkspace(activeWorkspace);
   const kinds = allowedKinds.length ? allowedKinds : (["Task"] as QuickCreateKind[]);
+  const allowedKindsKey = allowedKinds.join("|");
   const [type, setType] = useState<QuickCreateKind>(
     allowedKinds.includes(kind) ? kind : (kinds[0] ?? "Task"),
   );
@@ -115,7 +116,12 @@ export function QuickCreate({
       type: "Call",
       outcome: "Answered",
     });
-  }, [kind, open, defaultEntity, currentUser.id, defaultDepartment, allowedKinds.join("|")]);
+    // `allowedKinds` (and `kinds` derived from it) is an array-valued prop with an array
+    // default, so it has a fresh identity on every render. It is tracked by content via
+    // `allowedKindsKey`; depending on the arrays themselves would re-run this reset each
+    // render and wipe whatever the user has typed into the form.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [kind, open, defaultEntity, currentUser.id, defaultDepartment, allowedKindsKey]);
 
   const set = (k: FormKey, v: string) => setForm((p) => ({ ...p, [k]: v }));
   const entityId = form.entityId ?? defaultEntity;

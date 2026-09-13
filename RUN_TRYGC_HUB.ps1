@@ -1,4 +1,7 @@
-param([ValidateSet('dev', 'build')][string]$Mode = 'dev')
+# dev   - Vite dev server with hot reload.
+# build - production build for deployment (Cloudflare preset; not runnable locally).
+# serve - production build for Node, then run it locally on 127.0.0.1:3000.
+param([ValidateSet('dev', 'build', 'serve')][string]$Mode = 'dev')
 $ErrorActionPreference = 'Stop'
 $taskRoot = $PSScriptRoot
 $taskAlias = $null
@@ -37,6 +40,15 @@ try {
         }
         if ($Mode -eq 'build') {
             & npm.cmd run build
+        } elseif ($Mode -eq 'serve') {
+            # `vite preview` cannot serve this build: it looks for dist/server/server.js,
+            # while the build emits a Nitro bundle in .output. Build for Node and run that.
+            & npm.cmd run build:node
+            if ($LASTEXITCODE -ne 0) { throw 'Production build failed.' }
+            Write-Host 'TryGC Workspace Hub (production): http://127.0.0.1:3000'
+            $env:HOST = '127.0.0.1'
+            $env:PORT = '3000'
+            & node.exe '.output/server/index.mjs'
         } else {
             Write-Host 'TryGC Workspace Hub: http://127.0.0.1:5173'
             & npm.cmd run dev -- --host 127.0.0.1 --port 5173 --strictPort --configLoader runner

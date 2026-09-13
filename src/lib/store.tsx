@@ -382,12 +382,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return () => window.clearInterval(timer);
   }, [hydrated]);
 
-  const currentUser = (db.users.find((u) => u.id === currentUserId) ?? db.users[0]) as User;
+  // Memoised so the effect below (and every consumer of currentUser) sees a stable
+  // identity instead of a fresh object on each render.
+  const currentUser = useMemo(
+    () => (db.users.find((u) => u.id === currentUserId) ?? db.users[0]) as User,
+    [db.users, currentUserId],
+  );
 
   useEffect(() => {
     const allowed = getWorkspaceIdsForUser(currentUser);
     if (!allowed.includes(activeWorkspace)) setActiveWorkspaceState(allowed[0] ?? "management");
-  }, [currentUser.id, currentUser.department, currentUser.role, activeWorkspace]);
+  }, [currentUser, activeWorkspace]);
 
   const setActiveWorkspace = useCallback(
     (id: WorkspaceId) => {
