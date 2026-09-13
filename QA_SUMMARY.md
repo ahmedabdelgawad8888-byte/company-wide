@@ -1,5 +1,16 @@
 # QA Summary — TryGC Workspace Hub
 
+## September 13 — Dev & Business Analysis enhancement
+
+The PMO workspace gained a workbook-derived analytics layer
+(`src/features/pmo/analytics.ts`), a new `/pmo/reports` page (10 charts, 5 registers:
+wave, module, owner, deliverables, requirement explorer) and a rebuilt dashboard,
+milestones, E2E and capacity pages that now use real workbook dates, efforts and
+counts instead of hardcoded placeholders. Verified in headed Chrome: reports,
+dashboard, E2E, milestones and capacity all render with 0 console errors.
+Checks: TypeScript 0 errors, lint 0 errors (30 existing warnings), 71 unit tests pass
+(includes `tests/pmo-analytics.test.mjs`), production build passes.
+
 ## September 13 — Excel reconciliation supersedes the PMO seed notes below
 
 PMO now uses the attached `TryGC_PMO_Dashboard.xlsx` baseline: 97 requirements,
@@ -16,7 +27,7 @@ Last verified: 2026-09-13 (six-workspace edition), on a live dev server at `http
 
 | Gate                  | Command                | Result                                                |
 | --------------------- | ---------------------- | ----------------------------------------------------- |
-| Unit / workflow logic | `npm test`             | **66 / 66 passed**                                  |
+| Unit / workflow logic | `npm test`             | **66 / 66 passed**                                    |
 | TypeScript            | `npm run typecheck`    | **0 errors**                                          |
 | Lint / format         | `npm run lint`         | **0 errors** (30 pre-existing react-refresh warnings) |
 | Production build      | `BUILD_PRODUCTION.bat` | **passed** (client + SSR + Nitro)                     |

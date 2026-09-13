@@ -96,6 +96,7 @@ export function hubNav(w: WorkspaceId) {
               ["/pmo/raid", "RAID Log", "سجل المخاطر"],
               ["/pmo/questions", "Open Questions", "الأسئلة المفتوحة"],
               ["/pmo/capacity", "Effort & Capacity", "الجهد والقدرة"],
+              ["/pmo/reports", "Reports", "التقارير"],
             ].map(([to, label, labelAr]) => ({ to: to!, label: label!, labelAr: labelAr! })),
           },
         ]

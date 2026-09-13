@@ -1,42 +1,58 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { PageHeader, Panel, StatusPill } from "@/components/kit";
+import { useMemo, useState } from "react";
+import { PageHeader, Panel, Stat, StatusPill } from "@/components/kit";
 import { useApp } from "@/lib/store";
 import { useLang } from "@/lib/i18n";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import type { PmoMilestone } from "@/lib/types";
+import { TODAY } from "@/lib/data/seed";
+import { milestoneForecast, type MilestoneForecast } from "@/features/pmo/analytics";
 
 function PmoMilestones() {
   const { db } = useApp();
   const { t } = useLang();
-  const [selectedMilestone, setSelectedMilestone] = useState<PmoMilestone | null>(null);
+  const [selectedMilestone, setSelectedMilestone] = useState<MilestoneForecast | null>(null);
 
-  const { pmoMilestones, pmoRequirements } = db;
+  const { pmoMilestones, pmoRequirements, pmoPlanConfig } = db;
 
-  // Calculate milestone progress based on related requirements
-  const getMilestoneProgress = (milestone: PmoMilestone) => {
-    // Calculate based on wave progression
-    const waveReqs = pmoRequirements.filter((r) => r.wave === milestone.wave);
-    const doneReqs = waveReqs.filter(
-      (r) => r.pmoStatus === "Done" || r.pmoStatus === "Verify & Close",
-    );
-    const progress =
-      waveReqs.length > 0 ? Math.round((doneReqs.length / waveReqs.length) * 100) : 0;
+  const milestones = useMemo(
+    () => milestoneForecast(pmoMilestones, pmoRequirements, pmoPlanConfig.planStartDate),
+    [pmoMilestones, pmoRequirements, pmoPlanConfig.planStartDate],
+  );
 
-    return { total: waveReqs.length, done: doneReqs.length, progress };
-  };
+  const gatesPassed = milestones.filter((m) => m.progress === 100).length;
+  const nextGate = milestones.find((m) => m.progress < 100);
 
   return (
     <div className="space-y-6">
       <PageHeader
         title={t("Milestones", "المراحل الرئيسية")}
         subtitle={t(
-          `${pmoMilestones.length} milestones tracked`,
-          `${pmoMilestones.length} مرحلة متتبعة`,
+          `${milestones.length} gates with workbook forecast dates from ${pmoPlanConfig.planStartDate}.`,
+          `${milestones.length} بوابة بتواريخ متوقعة من الملف ابتداءً من ${pmoPlanConfig.planStartDate}.`,
         )}
       />
+
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <Stat label={t("Gates", "البوابات")} value={String(milestones.length)} tone="brand" />
+        <Stat
+          label={t("Wave complete", "موجات مكتملة")}
+          value={String(gatesPassed)}
+          tone="success"
+        />
+        <Stat
+          label={t("Next gate", "البوابة القادمة")}
+          value={nextGate?.id ?? "—"}
+          hint={nextGate?.forecastDate ?? ""}
+          tone="warning"
+        />
+        <Stat
+          label={t("Days to next gate", "أيام للبوابة القادمة")}
+          value={nextGate ? String(Math.max(0, nextGate.daysFromStart)) : "—"}
+          hint={TODAY}
+        />
+      </div>
 
       {/* Milestones Timeline View */}
       <Panel className="p-6">
@@ -46,8 +62,12 @@ function PmoMilestones() {
 
           {/* Milestone items */}
           <div className="space-y-8">
-            {pmoMilestones.map((milestone) => {
-              const progress = getMilestoneProgress(milestone);
+            {milestones.map((milestone) => {
+              const progress = {
+                total: milestone.waveTotal,
+                done: milestone.waveDelivered,
+                progress: milestone.progress,
+              };
 
               return (
                 <div
@@ -157,12 +177,12 @@ function PmoMilestones() {
                       <Badge variant="secondary">{selectedMilestone.wave}</Badge>
                     </div>
                   </div>
-                  {selectedMilestone.daysFromKickoff !== undefined && (
+                  {selectedMilestone.daysFromStart !== undefined && (
                     <div>
                       <div className="text-sm font-medium text-muted-foreground">
-                        {t("Days from Kickoff", "أيام من البداية")}
+                        {t("Days from kickoff", "أيام من البداية")}
                       </div>
-                      <div className="mt-1">{selectedMilestone.daysFromKickoff} days</div>
+                      <div className="mt-1">{selectedMilestone.daysFromStart} days</div>
                     </div>
                   )}
                 </div>
@@ -171,17 +191,13 @@ function PmoMilestones() {
                   <div className="text-sm font-medium text-muted-foreground mb-2">
                     {t("Progress", "التقدم")}
                   </div>
-                  {(() => {
-                    const progress = getMilestoneProgress(selectedMilestone);
-                    return (
-                      <div className="flex items-center gap-3">
-                        <Progress value={progress.progress} className="flex-1 h-3" />
-                        <span className="font-medium">
-                          {progress.done}/{progress.total} ({progress.progress}%)
-                        </span>
-                      </div>
-                    );
-                  })()}
+                  <div className="flex items-center gap-3">
+                    <Progress value={selectedMilestone.progress} className="flex-1 h-3" />
+                    <span className="font-medium">
+                      {selectedMilestone.waveDelivered}/{selectedMilestone.waveTotal} (
+                      {selectedMilestone.progress}%)
+                    </span>
+                  </div>
                 </div>
               </div>
             </>

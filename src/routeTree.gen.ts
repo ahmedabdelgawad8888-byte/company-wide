@@ -59,6 +59,7 @@ import { Route as PmoE2eRouteImport } from './routes/pmo/e2e'
 import { Route as PmoMilestonesRouteImport } from './routes/pmo/milestones'
 import { Route as PmoQuestionsRouteImport } from './routes/pmo/questions'
 import { Route as PmoRaidRouteImport } from './routes/pmo/raid'
+import { Route as PmoReportsRouteImport } from './routes/pmo/reports'
 import { Route as PmoRequirementsRouteImport } from './routes/pmo/requirements'
 import { Route as PmoTimelineRouteImport } from './routes/pmo/timeline'
 import { Route as ApiAgentChatRouteImport } from './routes/api.agent.chat'
@@ -319,6 +320,11 @@ const PmoRaidRoute = PmoRaidRouteImport.update({
   path: '/pmo/raid',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PmoReportsRoute = PmoReportsRouteImport.update({
+  id: '/pmo/reports',
+  path: '/pmo/reports',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PmoRequirementsRoute = PmoRequirementsRouteImport.update({
   id: '/pmo/requirements',
   path: '/pmo/requirements',
@@ -413,6 +419,7 @@ export interface FileRoutesByFullPath {
   '/pmo/milestones': typeof PmoMilestonesRoute
   '/pmo/questions': typeof PmoQuestionsRoute
   '/pmo/raid': typeof PmoRaidRoute
+  '/pmo/reports': typeof PmoReportsRoute
   '/pmo/requirements': typeof PmoRequirementsRoute
   '/pmo/timeline': typeof PmoTimelineRoute
   '/campaigns/': typeof CampaignsIndexRoute
@@ -474,6 +481,7 @@ export interface FileRoutesByTo {
   '/pmo/milestones': typeof PmoMilestonesRoute
   '/pmo/questions': typeof PmoQuestionsRoute
   '/pmo/raid': typeof PmoRaidRoute
+  '/pmo/reports': typeof PmoReportsRoute
   '/pmo/requirements': typeof PmoRequirementsRoute
   '/pmo/timeline': typeof PmoTimelineRoute
   '/campaigns': typeof CampaignsIndexRoute
@@ -536,6 +544,7 @@ export interface FileRoutesById {
   '/pmo/milestones': typeof PmoMilestonesRoute
   '/pmo/questions': typeof PmoQuestionsRoute
   '/pmo/raid': typeof PmoRaidRoute
+  '/pmo/reports': typeof PmoReportsRoute
   '/pmo/requirements': typeof PmoRequirementsRoute
   '/pmo/timeline': typeof PmoTimelineRoute
   '/campaigns/': typeof CampaignsIndexRoute
@@ -599,6 +608,7 @@ export interface FileRouteTypes {
     | '/pmo/milestones'
     | '/pmo/questions'
     | '/pmo/raid'
+    | '/pmo/reports'
     | '/pmo/requirements'
     | '/pmo/timeline'
     | '/campaigns/'
@@ -660,6 +670,7 @@ export interface FileRouteTypes {
     | '/pmo/milestones'
     | '/pmo/questions'
     | '/pmo/raid'
+    | '/pmo/reports'
     | '/pmo/requirements'
     | '/pmo/timeline'
     | '/campaigns'
@@ -721,6 +732,7 @@ export interface FileRouteTypes {
     | '/pmo/milestones'
     | '/pmo/questions'
     | '/pmo/raid'
+    | '/pmo/reports'
     | '/pmo/requirements'
     | '/pmo/timeline'
     | '/campaigns/'
@@ -782,6 +794,7 @@ export interface RootRouteChildren {
   PmoMilestonesRoute: typeof PmoMilestonesRoute
   PmoQuestionsRoute: typeof PmoQuestionsRoute
   PmoRaidRoute: typeof PmoRaidRoute
+  PmoReportsRoute: typeof PmoReportsRoute
   PmoRequirementsRoute: typeof PmoRequirementsRoute
   PmoTimelineRoute: typeof PmoTimelineRoute
   CampaignsIndexRoute: typeof CampaignsIndexRoute
@@ -1149,6 +1162,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PmoRaidRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pmo/reports': {
+      id: '/pmo/reports'
+      path: '/pmo/reports'
+      fullPath: '/pmo/reports'
+      preLoaderRoute: typeof PmoReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/pmo/requirements': {
       id: '/pmo/requirements'
       path: '/pmo/requirements'
@@ -1271,6 +1291,7 @@ const rootRouteChildren: RootRouteChildren = {
   PmoMilestonesRoute: PmoMilestonesRoute,
   PmoQuestionsRoute: PmoQuestionsRoute,
   PmoRaidRoute: PmoRaidRoute,
+  PmoReportsRoute: PmoReportsRoute,
   PmoRequirementsRoute: PmoRequirementsRoute,
   PmoTimelineRoute: PmoTimelineRoute,
   CampaignsIndexRoute: CampaignsIndexRoute,

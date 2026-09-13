@@ -419,9 +419,7 @@
       "mitigation": "Start BRD-2 in W1 with a dedicated data pass; freeze the category list before cleanup begins.",
       "owner": "Data/BI",
       "status": "Open",
-      "relatedReqs": [
-        "BRD-02"
-      ]
+      "relatedReqs": ["BRD-02"]
     },
     {
       "id": "R-02",
@@ -445,9 +443,7 @@
       "mitigation": "Weekly automated reconciliation with an exception report reviewed by Operations and Finance.",
       "owner": "DevOps",
       "status": "Open",
-      "relatedReqs": [
-        "TEC-02"
-      ]
+      "relatedReqs": ["TEC-02"]
     },
     {
       "id": "R-04",
@@ -459,9 +455,7 @@
       "mitigation": "Secure written commercial sign-off before the change ships; keep the admin toggle ready as a rollback.",
       "owner": "Management",
       "status": "Open",
-      "relatedReqs": [
-        "REP-01"
-      ]
+      "relatedReqs": ["REP-01"]
     },
     {
       "id": "R-05",
@@ -473,10 +467,7 @@
       "mitigation": "Log every automatic change with before/after values and provide an admin revert.",
       "owner": "Backend",
       "status": "Open",
-      "relatedReqs": [
-        "INF-09",
-        "INF-10"
-      ]
+      "relatedReqs": ["INF-09", "INF-10"]
     },
     {
       "id": "R-06",
@@ -488,11 +479,7 @@
       "mitigation": "Balance the waves and consider temporary capacity for W3; monitor effort per owner on the dashboard.",
       "owner": "Product/BA",
       "status": "Open",
-      "relatedReqs": [
-        "REP-05",
-        "REP-08",
-        "REP-17"
-      ]
+      "relatedReqs": ["REP-05", "REP-08", "REP-17"]
     },
     {
       "id": "R-07",
@@ -552,10 +539,7 @@
       "mitigation": "Management decision logged as ACT-04; hold pagination sizing until resolved.",
       "owner": "Management",
       "status": "Open",
-      "relatedReqs": [
-        "INF-11",
-        "BRD-05"
-      ]
+      "relatedReqs": ["INF-11", "BRD-05"]
     },
     {
       "id": "I-02",
@@ -579,12 +563,7 @@
       "mitigation": "BRD-2 scheduled in W1 as a hard predecessor; tracked on the E2E view.",
       "owner": "Data/BI",
       "status": "Open",
-      "relatedReqs": [
-        "BRD-01",
-        "REP-17",
-        "WSH-02",
-        "WSH-06"
-      ]
+      "relatedReqs": ["BRD-01", "REP-17", "WSH-02", "WSH-06"]
     },
     {
       "id": "D-02",
@@ -596,10 +575,7 @@
       "mitigation": "Close Q-04 before W4 starts; W4 is scheduled to begin after the clarification gate.",
       "owner": "Product/BA",
       "status": "Open",
-      "relatedReqs": [
-        "APR-02",
-        "APR-03"
-      ]
+      "relatedReqs": ["APR-02", "APR-03"]
     },
     {
       "id": "D-03",
@@ -611,10 +587,7 @@
       "mitigation": "COM-1 sequenced after APR-1; both in W4.",
       "owner": "Full-stack",
       "status": "Open",
-      "relatedReqs": [
-        "COM-01",
-        "APR-01"
-      ]
+      "relatedReqs": ["COM-01", "APR-01"]
     }
   ],
   "pmoRequirements": [
@@ -724,9 +697,7 @@
       "ownerRole": "Frontend",
       "e2eStage": "Influencer Discovery & Sourcing",
       "durationDays": 1,
-      "dependencies": [
-        "INF-11"
-      ],
+      "dependencies": ["INF-11"],
       "acceptanceCriteria": "Page size at brand level confirmed and applied consistently.",
       "clarificationNeeded": "Direct conflict with INF-11 (100 per page). The source explicitly asks management to decide which number applies on which screen.",
       "percentDone": 100
@@ -837,9 +808,7 @@
       "ownerRole": "Data/BI",
       "e2eStage": "Influencer Discovery & Sourcing",
       "durationDays": 5,
-      "dependencies": [
-        "REP-01"
-      ],
+      "dependencies": ["REP-01"],
       "acceptanceCriteria": "Average Views shown at influencer and per-channel level, matching the reporting definition.",
       "percentDone": 0
     },
@@ -861,9 +830,7 @@
       "ownerRole": "Data/BI",
       "e2eStage": "Reporting & Client Delivery",
       "durationDays": 3,
-      "dependencies": [
-        "BRD-02"
-      ],
+      "dependencies": ["BRD-02"],
       "acceptanceCriteria": "Impressions and Reach absent from all client-facing reports; Admin toggle restores them without a release.",
       "percentDone": 0
     },
@@ -907,9 +874,7 @@
       "ownerRole": "Backend",
       "e2eStage": "Influencer Discovery & Sourcing",
       "durationDays": 5,
-      "dependencies": [
-        "INF-11"
-      ],
+      "dependencies": ["INF-11"],
       "acceptanceCriteria": "Filter state accumulates; sorting and further filters never reset the result set to the full population.",
       "percentDone": 0
     },
@@ -931,9 +896,7 @@
       "ownerRole": "Full-stack",
       "e2eStage": "Campaign Setup & Booking",
       "durationDays": 5,
-      "dependencies": [
-        "INF-03"
-      ],
+      "dependencies": ["INF-03"],
       "acceptanceCriteria": "Campaign filter returns the participant roster with visited / coverage / missed flags per person.",
       "percentDone": 0
     },
@@ -955,9 +918,7 @@
       "ownerRole": "Frontend",
       "e2eStage": "Influencer Discovery & Sourcing",
       "durationDays": 3,
-      "dependencies": [
-        "INF-03"
-      ],
+      "dependencies": ["INF-03"],
       "acceptanceCriteria": "Numbered pages, 100 per page, deep-linkable page state, no progressive slowdown.",
       "clarificationNeeded": "Conflicts with BRD-05, which asks for 50 per page at brand level. Management must decide which number applies on which screen.",
       "percentDone": 0
@@ -980,9 +941,7 @@
       "ownerRole": "Full-stack",
       "e2eStage": "Content Capture & Best Media",
       "durationDays": 5,
-      "dependencies": [
-        "INF-08"
-      ],
+      "dependencies": ["INF-08"],
       "acceptanceCriteria": "CONTENT section live with type and audio filters; 'reels with voice-over' returns the expected set.",
       "percentDone": 0
     },
@@ -1027,9 +986,7 @@
       "ownerRole": "Full-stack",
       "e2eStage": "Reporting & Client Delivery",
       "durationDays": 5,
-      "dependencies": [
-        "REP-01"
-      ],
+      "dependencies": ["REP-01"],
       "acceptanceCriteria": "One report covers all campaigns for a client; per-campaign subtotals reconcile to the consolidated total.",
       "percentDone": 0
     },
@@ -1051,10 +1008,7 @@
       "ownerRole": "Data/BI",
       "e2eStage": "Reporting & Client Delivery",
       "durationDays": 5,
-      "dependencies": [
-        "REP-05",
-        "REP-10"
-      ],
+      "dependencies": ["REP-05", "REP-10"],
       "acceptanceCriteria": "Every consolidated chart (views, likes, channels) is segmented by campaign; values reconcile to the total.",
       "percentDone": 0
     },
@@ -1098,10 +1052,7 @@
       "ownerRole": "Data/BI",
       "e2eStage": "Reporting & Client Delivery",
       "durationDays": 5,
-      "dependencies": [
-        "BRD-02",
-        "REP-05"
-      ],
+      "dependencies": ["BRD-02", "REP-05"],
       "acceptanceCriteria": "Brand subtotals present and reconciling to the company total.",
       "percentDone": 0
     },
@@ -1189,9 +1140,7 @@
       "ownerRole": "Full-stack",
       "e2eStage": "Influencer Discovery & Sourcing",
       "durationDays": 5,
-      "dependencies": [
-        "APR-01"
-      ],
+      "dependencies": ["APR-01"],
       "acceptanceCriteria": "Community-created influencers visible only after approval; workflow logs the approval decision.",
       "percentDone": 0
     },

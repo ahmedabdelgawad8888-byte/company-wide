@@ -157,7 +157,7 @@ const WORKSPACE_NAV: Record<WorkspaceId, WorkspaceNavGroup[]> = {
       items: [
         { to: "/pmo/capacity", label: "Effort & Capacity", labelAr: "الجهد والقدرة" },
         { to: "/calendar", label: "Delivery Calendar", labelAr: "تقويم التسليم" },
-        { to: "/reports", label: "PMO Reports", labelAr: "تقارير PMO" },
+        { to: "/pmo/reports", label: "Reports", labelAr: "التقارير" },
         { to: "/activity", label: "Activity & Changes", labelAr: "النشاط والتغييرات" },
       ],
     },

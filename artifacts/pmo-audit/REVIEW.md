@@ -50,10 +50,10 @@ in the app**. Capacity and dashboard summaries use this incomplete app collectio
 Even included requirements have effort differences:
 
 | Requirement | Excel person-days | App person-days |
-|---|---:|---:|
-| APR-08 | 3 | 5 |
-| COM-01 | 3 | 5 |
-| BRD-03 | 3 | 1 |
+| ----------- | ----------------: | --------------: |
+| APR-08      |                 3 |               5 |
+| COM-01      |                 3 |               5 |
+| BRD-03      |                 3 |               1 |
 
 All missing IDs and field differences are in `differences.csv`.
 
@@ -80,17 +80,17 @@ wave week ranges instead of the workbook dates. For example, W1 starts September
 
 Workbook milestone forecasts, calculated from its formulas:
 
-| Gate | Forecast |
-|---|---|
-| M0 | 2026-09-21 |
-| M1 | 2026-10-05 |
-| M2 | 2026-10-09 |
-| M3 | 2026-11-12 |
-| M4 | 2026-12-22 |
-| M5 | 2027-01-14 |
-| M6 | 2027-02-03 |
-| M7 | 2027-02-23 |
-| M8 | 2027-03-09 |
+| Gate | Forecast   |
+| ---- | ---------- |
+| M0   | 2026-09-21 |
+| M1   | 2026-10-05 |
+| M2   | 2026-10-09 |
+| M3   | 2026-11-12 |
+| M4   | 2026-12-22 |
+| M5   | 2027-01-14 |
+| M6   | 2027-02-03 |
+| M7   | 2027-02-23 |
+| M8   | 2027-03-09 |
 
 ### P1 — General workspace records are a separate, partial, manually authored seed
 
@@ -111,12 +111,12 @@ A migration must preserve user edits and identify conflicts rather than resettin
 
 ### P2 — Action, RAID and E2E details are incomplete
 
-| Collection | Excel | App | Detail |
-|---|---:|---:|---|
-| Actions | 18 | 13 | ACT-12 through ACT-16 missing |
-| RAID | 15 | 15 | Six records lose source related references |
-| Milestones | 9 | 9 | Dates absent; some gate text differs |
-| E2E stages | 9 | 9 | Stored counts/effort are zero; dates absent |
+| Collection | Excel | App | Detail                                      |
+| ---------- | ----: | --: | ------------------------------------------- |
+| Actions    |    18 |  13 | ACT-12 through ACT-16 missing               |
+| RAID       |    15 |  15 | Six records lose source related references  |
+| Milestones |     9 |   9 | Dates absent; some gate text differs        |
+| E2E stages |     9 |   9 | Stored counts/effort are zero; dates absent |
 
 App-calculated E2E counts also rely on the incomplete requirements collection.
 Some action references lose the second related requirement or Programme context.

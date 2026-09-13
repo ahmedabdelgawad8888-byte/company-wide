@@ -12,21 +12,10 @@ function PmoCapacity() {
 
   const { pmoRequirements, pmoPlanConfig } = db;
 
-  // Calculate effort by role
-  const roles: PmoOwnerRole[] = [
-    "Product/BA",
-    "UI/UX",
-    "Backend",
-    "Frontend",
-    "Full-stack",
-    "Data/BI",
-    "DevOps",
-    "QA",
-    "Ops",
-    "Management",
-  ];
-
   const waves: PmoWave[] = ["W0", "W1", "W2", "W3", "W4", "W5", "W6"];
+
+  // Derive the owner-role list from the workbook so a new role is never dropped.
+  const roles: PmoOwnerRole[] = [...new Set(pmoRequirements.map((r) => r.ownerRole))];
 
   // Calculate effort by role
   const effortByRole = roles.map((role) => {
