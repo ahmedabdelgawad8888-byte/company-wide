@@ -61,7 +61,8 @@ export function HubPage({
   module?: string;
   recordId?: string;
 }) {
-  const { actor, users, state, ready, error, reload, transact } = useHub();
+  const { actor, users, state, ready, error, reload, transact, downloadBackup, resetStorage } =
+    useHub();
   const all = useRecords();
   const { activeWorkspace, setActiveWorkspace } = useApp();
   const { t } = useLang();
@@ -73,7 +74,7 @@ export function HubPage({
   const rows = all.filter((r) => r.workspaceId === workspaceId);
   useEffect(() => {
     if (allowed && activeWorkspace !== workspaceId) setActiveWorkspace(workspaceId);
-  }, [allowed, workspaceId]);
+  }, [allowed, workspaceId, activeWorkspace, setActiveWorkspace]);
   useEffect(() => {
     setSelected(recordId ?? null);
     setCreate(null);
@@ -85,7 +86,34 @@ export function HubPage({
           {t("Unable to load workspace data", "تعذر تحميل بيانات المساحة")}
         </h1>
         <p className="my-3 text-sm">{error}</p>
-        <Button onClick={reload}>{t("Retry", "إعادة المحاولة")}</Button>
+        <p className="mb-4 max-w-2xl text-sm text-muted-foreground">
+          {t(
+            "Download a recovery copy first — resetting clears the stored data in this browser and restores the seeded demo set.",
+            "نزّل نسخة استرداد أولاً — إعادة الضبط تمسح البيانات المخزنة في هذا المتصفح وتستعيد البيانات التجريبية.",
+          )}
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={reload}>{t("Retry", "إعادة المحاولة")}</Button>
+          <Button variant="outline" onClick={downloadBackup}>
+            {t("Download recovery copy", "تنزيل نسخة استرداد")}
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={() => {
+              if (
+                window.confirm(
+                  t(
+                    "Reset workspace data in this browser? This cannot be undone.",
+                    "إعادة ضبط بيانات المساحة في هذا المتصفح؟ لا يمكن التراجع.",
+                  ),
+                )
+              )
+                resetStorage();
+            }}
+          >
+            {t("Reset workspace data", "إعادة ضبط البيانات")}
+          </Button>
+        </div>
       </div>
     );
   if (!ready)

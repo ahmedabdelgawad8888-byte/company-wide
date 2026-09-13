@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
 import {
@@ -12,6 +12,8 @@ import {
   Stamp,
   BellRing,
   Bot,
+  Download,
+  Upload,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -28,6 +30,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PageHeader, Panel, Section } from "@/components/kit";
 import { useApp } from "@/lib/store";
+import { useHub } from "@/features/workspaces/provider";
 import { useLang } from "@/lib/i18n";
 import { useTheme } from "@/lib/theme";
 import { CADENCES, cadenceLabel } from "@/lib/calendar";
@@ -110,6 +113,83 @@ const SECTIONS = [
 ] as const;
 
 type SectionKey = (typeof SECTIONS)[number]["key"];
+
+/**
+ * Workspace records live in this browser's local storage, so a backup taken here is
+ * the only copy that survives clearing site data or moving to another machine.
+ */
+function WorkspaceDataPanel() {
+  const { t } = useLang();
+  const { state, ready, downloadBackup, resetStorage, restoreBackup } = useHub();
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const pick = async (file: File | undefined) => {
+    if (!file) return;
+    try {
+      restoreBackup(await file.text());
+    } catch {
+      toast.error(t("That file could not be read.", "تعذر قراءة هذا الملف."));
+    }
+  };
+
+  return (
+    <Panel>
+      <Section
+        title={t("Workspace data", "بيانات مساحة العمل")}
+        description={t(
+          "Records are stored in this browser only. Download a recovery copy before clearing site data or switching machines.",
+          "تُحفظ السجلات في هذا المتصفح فقط. نزّل نسخة استرداد قبل مسح بيانات الموقع أو تغيير الجهاز.",
+        )}
+      >
+        <Row
+          label={t("Stored records", "السجلات المخزنة")}
+          hint={t("Across every workspace in this browser.", "في كل المساحات داخل هذا المتصفح.")}
+        >
+          <span className="text-sm tabular-nums text-muted-foreground">
+            {ready ? state.records.length : "—"}
+          </span>
+        </Row>
+
+        <div className="flex flex-wrap gap-2 pt-2">
+          <Button variant="outline" onClick={downloadBackup}>
+            <Download className="size-4" /> {t("Download recovery copy", "تنزيل نسخة استرداد")}
+          </Button>
+
+          <input
+            ref={fileRef}
+            type="file"
+            accept="application/json,.json"
+            className="sr-only"
+            onChange={(e) => {
+              void pick(e.target.files?.[0]);
+              e.target.value = "";
+            }}
+          />
+          <Button variant="outline" onClick={() => fileRef.current?.click()}>
+            <Upload className="size-4" /> {t("Restore from file", "استعادة من ملف")}
+          </Button>
+
+          <Button
+            variant="destructive"
+            onClick={() => {
+              if (
+                window.confirm(
+                  t(
+                    "Reset workspace data in this browser? Every record you created is removed and the seeded demo set is restored. This cannot be undone.",
+                    "إعادة ضبط بيانات المساحة في هذا المتصفح؟ ستُحذف كل السجلات التي أنشأتها وتُستعاد البيانات التجريبية. لا يمكن التراجع.",
+                  ),
+                )
+              )
+                resetStorage();
+            }}
+          >
+            <RotateCcw className="size-4" /> {t("Reset workspace data", "إعادة ضبط البيانات")}
+          </Button>
+        </div>
+      </Section>
+    </Panel>
+  );
+}
 
 function SettingsPage() {
   const { db, actions, can } = useApp();
@@ -247,6 +327,8 @@ function SettingsPage() {
                 hint={t("Month and day, e.g. 01-01.", "الشهر واليوم، مثال ٠١-٠١.")}
               >
                 <Input
+                  // Row renders its label as plain text, so the field needs its own name.
+                  aria-label={t("Fiscal year starts", "بداية السنة المالية")}
                   value={s.organisation.fiscalYearStart}
                   onChange={(e) => save("organisation", { fiscalYearStart: e.target.value })}
                 />
@@ -688,48 +770,51 @@ function SettingsPage() {
       ) : null}
 
       {tab === "data" ? (
-        <Panel>
-          <Section
-            title={t("Data & exports", "البيانات والتصدير")}
-            description={t(
-              "Defaults applied to CSV and PDF exports.",
-              "الإعدادات الافتراضية للتصدير.",
-            )}
-          >
-            <Row label={t("Brand exports with the Trygc logo", "إضافة شعار Trygc للتصدير")}>
-              <Toggle
-                id="d-brand"
-                checked={s.data.exportBranding}
-                onChange={(v) => save("data", { exportBranding: v })}
-              />
-            </Row>
-            <Row label={t("CSV delimiter", "فاصل CSV")}>
-              <Picker
-                value={s.data.csvDelimiter}
-                onChange={(v) => save("data", { csvDelimiter: v })}
-                options={[
-                  { value: ",", label: t("Comma", "فاصلة") },
-                  { value: ";", label: t("Semicolon", "فاصلة منقوطة") },
-                  { value: "\t", label: t("Tab", "مسافة جدولة") },
-                ]}
-              />
-            </Row>
-            <Row label={t("Include archived records", "تضمين السجلات المؤرشفة")}>
-              <Toggle
-                id="d-arch"
-                checked={s.data.includeArchivedInExports}
-                onChange={(v) => save("data", { includeArchivedInExports: v })}
-              />
-            </Row>
-            <Row label={t("Backup frequency", "تكرار النسخ الاحتياطي")}>
-              <Picker
-                value={s.data.backupCadence}
-                onChange={(v) => save("data", { backupCadence: v as Cadence })}
-                options={cadenceOptions}
-              />
-            </Row>
-          </Section>
-        </Panel>
+        <div className="grid gap-5 lg:grid-cols-2">
+          <Panel>
+            <Section
+              title={t("Data & exports", "البيانات والتصدير")}
+              description={t(
+                "Defaults applied to CSV and PDF exports.",
+                "الإعدادات الافتراضية للتصدير.",
+              )}
+            >
+              <Row label={t("Brand exports with the Trygc logo", "إضافة شعار Trygc للتصدير")}>
+                <Toggle
+                  id="d-brand"
+                  checked={s.data.exportBranding}
+                  onChange={(v) => save("data", { exportBranding: v })}
+                />
+              </Row>
+              <Row label={t("CSV delimiter", "فاصل CSV")}>
+                <Picker
+                  value={s.data.csvDelimiter}
+                  onChange={(v) => save("data", { csvDelimiter: v })}
+                  options={[
+                    { value: ",", label: t("Comma", "فاصلة") },
+                    { value: ";", label: t("Semicolon", "فاصلة منقوطة") },
+                    { value: "\t", label: t("Tab", "مسافة جدولة") },
+                  ]}
+                />
+              </Row>
+              <Row label={t("Include archived records", "تضمين السجلات المؤرشفة")}>
+                <Toggle
+                  id="d-arch"
+                  checked={s.data.includeArchivedInExports}
+                  onChange={(v) => save("data", { includeArchivedInExports: v })}
+                />
+              </Row>
+              <Row label={t("Backup frequency", "تكرار النسخ الاحتياطي")}>
+                <Picker
+                  value={s.data.backupCadence}
+                  onChange={(v) => save("data", { backupCadence: v as Cadence })}
+                  options={cadenceOptions}
+                />
+              </Row>
+            </Section>
+          </Panel>
+          <WorkspaceDataPanel />
+        </div>
       ) : null}
 
       {tab === "ai" ? (

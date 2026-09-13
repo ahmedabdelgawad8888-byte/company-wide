@@ -1,4 +1,13 @@
-import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { toast } from "sonner";
 import { useApp } from "../../lib/store";
 import { LocalRepository, STORAGE_KEY } from "./repository";
@@ -16,6 +25,12 @@ type HubContext = {
   users: Actor[];
   transact: <T>(fn: (s: HubState) => T) => T;
   reload: () => void;
+  /** Saves the raw stored copy to a file — works even when the data fails to load. */
+  downloadBackup: () => void;
+  /** Clears stored data and reseeds from the demo seed. Destructive; confirm first. */
+  resetStorage: () => void;
+  /** Validates and loads a previously downloaded recovery copy. */
+  restoreBackup: (raw: string) => void;
 };
 const Ctx = createContext<HubContext | null>(null);
 /**
@@ -46,10 +61,15 @@ export function HubProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState("");
   // Every actor carries the ids of everyone below them in the workspace hierarchy,
   // so record visibility can be resolved without re-walking the directory each time.
-  const users = withReportIds([...db.users, ...pmoOwners]);
-  const actor = users.find((u) => u.id === currentUser.id) ?? currentUser;
+  // Memoised because resolving the reporting tree on every render would also make
+  // `reload` and the automation sweep below unstable.
+  const users = useMemo(() => withReportIds([...db.users, ...pmoOwners]), [db.users]);
+  const actor = useMemo(
+    () => users.find((u) => u.id === currentUser.id) ?? currentUser,
+    [users, currentUser],
+  );
   const initialDb = useRef(db);
-  const reload = () => {
+  const reload = useCallback(() => {
     try {
       repo.current = new LocalRepository(window.localStorage);
       const stored = repo.current.load();
@@ -74,15 +94,68 @@ export function HubProvider({ children }: { children: ReactNode }) {
       );
       setReady(false);
     }
-  };
+  }, [users]);
+  /**
+   * Reads storage directly rather than serialising `state`, so a copy can still be
+   * rescued when the stored data is the very thing that failed to parse.
+   */
+  const downloadBackup = useCallback(() => {
+    try {
+      const raw = repo.current?.exportRaw() ?? window.localStorage.getItem(STORAGE_KEY);
+      if (!raw) {
+        toast.error("There is no stored workspace data to export.");
+        return;
+      }
+      const url = URL.createObjectURL(new Blob([raw], { type: "application/json" }));
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `trygc-workspace-backup-${today()}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      toast.success("Recovery copy downloaded.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not export a recovery copy.");
+    }
+  }, []);
+
+  const resetStorage = useCallback(() => {
+    try {
+      (repo.current ?? new LocalRepository(window.localStorage)).clear();
+      reload();
+      toast.success("Workspace data reset to the seeded demo set.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not reset workspace data.");
+    }
+  }, [reload]);
+
+  const restoreBackup = useCallback(
+    (raw: string) => {
+      try {
+        (repo.current ?? new LocalRepository(window.localStorage)).restore(raw);
+        reload();
+        toast.success("Workspace data restored from the recovery copy.");
+      } catch (e) {
+        toast.error(
+          e instanceof Error
+            ? `Restore failed: ${e.message}`
+            : "That file is not a valid workspace recovery copy.",
+        );
+      }
+    },
+    [reload],
+  );
+
   useEffect(() => {
     reload();
+    // Another tab writing to the same key means this tab's copy is stale.
     const listener = (e: StorageEvent) => {
       if (e.key === STORAGE_KEY) reload();
     };
     window.addEventListener("storage", listener);
     return () => window.removeEventListener("storage", listener);
-  }, []);
+  }, [reload]);
   function transact<T>(fn: (s: HubState) => T): T {
     if (!ready || !repo.current) throw new Error("Workspace storage is not ready.");
     const base = latest.current;
@@ -114,9 +187,22 @@ export function HubProvider({ children }: { children: ReactNode }) {
     run();
     const timer = window.setInterval(run, 60000);
     return () => window.clearInterval(timer);
-  }, [ready, actor.id]);
+  }, [ready, actor]);
   return (
-    <Ctx.Provider value={{ state, ready, error, actor, users, transact, reload }}>
+    <Ctx.Provider
+      value={{
+        state,
+        ready,
+        error,
+        actor,
+        users,
+        transact,
+        reload,
+        downloadBackup,
+        resetStorage,
+        restoreBackup,
+      }}
+    >
       {children}
     </Ctx.Provider>
   );

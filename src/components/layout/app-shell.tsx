@@ -385,7 +385,12 @@ export function AppShell({ children }: { children: ReactNode }) {
         <header className="sticky top-0 z-30 flex h-16 items-center gap-2 border-b bg-card/80 px-3 backdrop-blur supports-[backdrop-filter]:bg-card/70 sm:px-5">
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="lg:hidden">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="lg:hidden"
+                aria-label={t("Open navigation", "فتح القائمة")}
+              >
                 <PanelLeft className="size-4" />
               </Button>
             </SheetTrigger>
@@ -409,7 +414,11 @@ export function AppShell({ children }: { children: ReactNode }) {
 
           <button
             onClick={() => setPaletteOpen(true)}
-            className="flex h-9 flex-1 items-center gap-2 rounded-lg border bg-muted/40 px-3 text-sm text-muted-foreground transition-colors hover:bg-muted sm:max-w-md"
+            // No aria-label: the visible text already names this button per workspace
+            // ("Search priorities…"), and a generic label would replace it.
+            // min-w-0 lets this flex child shrink below its text width; without it the
+            // header could not fit a narrow phone viewport and the page scrolled sideways.
+            className="flex h-9 min-w-0 flex-1 items-center gap-2 rounded-lg border bg-muted/40 px-3 text-sm text-muted-foreground transition-colors hover:bg-muted sm:max-w-md"
           >
             <Search className="size-4" />
             <span className="truncate">{workspaceSearchText(activeWorkspace, t)}</span>
@@ -418,9 +427,10 @@ export function AppShell({ children }: { children: ReactNode }) {
             </kbd>
           </button>
 
-          <div className="ms-auto flex items-center gap-1.5">
+          <div className="ms-auto flex shrink-0 items-center gap-1.5">
             <Button variant="ghost" size="sm" asChild>
-              <Link to="/agent">
+              {/* The label is hidden on phones, so name the control for assistive tech. */}
+              <Link to="/agent" aria-label={t("AI Agent", "الوكيل الذكي")}>
                 <Bot className="size-4" />
                 <span className="hidden sm:inline">{t("AI Agent", "الوكيل الذكي")}</span>
               </Link>
@@ -460,7 +470,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button size="sm" className="gap-1.5">
+                <Button size="sm" className="gap-1.5" aria-label={t("Create", "إنشاء")}>
                   <Plus className="size-4" />
                   <span className="hidden sm:inline">{t("Create", "إنشاء")}</span>
                 </Button>
@@ -474,7 +484,9 @@ export function AppShell({ children }: { children: ReactNode }) {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <Button variant="ghost" size="sm" asChild>
+            {/* Hidden on phones like Approvals below: both stay reachable from the
+                sidebar nav, and keeping them here overflowed the header. */}
+            <Button variant="ghost" size="sm" className="hidden sm:inline-flex" asChild>
               <Link to={modulePath(activeWorkspace, "my-work") as never}>
                 {t("My work", "عملي")}
               </Link>

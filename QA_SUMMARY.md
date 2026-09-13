@@ -1,5 +1,46 @@
 # QA Summary — TryGC Workspace Hub
 
+## September 13 — Build, QA harness, recovery, agent continuation
+
+**Build.** The production build could not be run locally: `vite preview` looks for
+`dist/server/server.js` while the Nitro build emits `.output/`, so every route
+returned 500. Added `build:node` (node-server preset), `start`, a working
+`preview`, a `serve` mode in `RUN_TRYGC_HUB.ps1` and `SERVE_PRODUCTION.bat`.
+Vercel Analytics was 404-ing `/_vercel/insights/script.js` on every page load in
+this Cloudflare-targeted build; it is now opt-in via `VITE_ENABLE_ANALYTICS`.
+
+**QA harness.** The suites assumed a dev server was already running, launched
+headed Chrome by channel, and `qa-smoke` exited 0 regardless of what it found.
+`scripts/qa-harness.mjs` now boots the server, falls back from bundled Chromium to
+system Chrome, and fails the run on failed checks or app console errors
+(third-party CDN errors are reported separately). Stale assertions were corrected:
+the record detail is a full page, not a drawer, and uppercased headings must be
+matched case-insensitively. Added `qa:responsive` (phone layout, accessible names,
+labelled fields, one `h1`).
+
+**Storage recovery.** `LocalRepository` told users to "export a recovery copy"
+that did not exist — a corrupt store left the app stuck behind a Retry button that
+threw again. Added `exportRaw`/`clear`/`restore` plus a validating `parseState`
+(a bad import can no longer destroy good data), surfaced as Download / Restore /
+Reset in Settings → Data & exports and on the error screen.
+
+**AI agent.** Replies were truncated mid-sentence: `maxOutputTokens: 2000` against
+a system prompt demanding five rich sections, with `finishReason` discarded. The
+budget is now 8000 per turn and the client resumes automatically on
+`finishReason === "length"` (up to 4 rounds), rendering each round as it arrives.
+
+**React hooks.** Fixed 4 `exhaustive-deps` warnings by memoising `users`, `actor`
+and `currentUser` and wrapping `reload` in `useCallback`, rather than padding
+dependency arrays (which would have re-read storage every render).
+
+**Accessibility / mobile.** Every page overflowed a 390px viewport by ~500px
+(header `flex-1` search lacking `min-w-0`); three icon-only header controls had no
+accessible name; one settings field had no label. All fixed and gated.
+
+Checks: TypeScript 0 errors · lint 0 errors (24 warnings, all
+`react-refresh/only-export-components`) · 92 unit tests pass · production build
+passes · 113/113 browser checks pass against the **production** build.
+
 ## September 13 — Dev & Business Analysis enhancement
 
 The PMO workspace gained a workbook-derived analytics layer

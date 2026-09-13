@@ -40,3 +40,6 @@ dist-ssr
 copy-*.cjs
 scan.cjs
 t.cjs
+
+# Generated QA screenshots (scripts/qa-dashboard.mjs)
+artifacts/qa/
