@@ -1,0 +1,15 @@
+{
+  "passed": true,
+  "definitions": 56,
+  "enabledSchedules": 28,
+  "checks": [
+    "category filter",
+    "schedule save and audit",
+    "request task creation",
+    "completion guard",
+    "reload persistence and deduplication",
+    "task tracker",
+    "mobile overflow"
+  ],
+  "runtimeErrors": []
+}

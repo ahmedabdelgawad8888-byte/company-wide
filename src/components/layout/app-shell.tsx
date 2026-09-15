@@ -60,7 +60,7 @@ const QUICK_CREATE_BY_WORKSPACE: Record<WorkspaceId, QuickCreateKind[]> = {
   management: ["project", "task", "meeting", "decision", "blocker", "request", "data-issue"],
   sales: ["action", "client", "meeting", "task"],
   finance: ["bill", "payment", "task", "meeting"],
-  hr: ["employee", "people-action", "interview", "onboarding", "task", "meeting"],
+  hr: ["hr-task", "file"],
   it: ["routine", "task", "project", "process", "sop", "blocker", "data-issue", "meeting"],
   pmo: ["project", "task", "decision", "blocker", "request", "data-issue", "meeting"],
 };
@@ -382,7 +382,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-16 items-center gap-2 border-b bg-card/80 px-3 backdrop-blur supports-[backdrop-filter]:bg-card/70 sm:px-5">
+        <header className="sticky top-0 z-30 flex min-h-16 flex-wrap items-center gap-2 border-b bg-card/80 px-3 backdrop-blur supports-[backdrop-filter]:bg-card/70 py-2 sm:h-16 sm:flex-nowrap sm:px-5 sm:py-0">
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>
               <Button

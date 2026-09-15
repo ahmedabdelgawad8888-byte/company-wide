@@ -49,12 +49,14 @@ export function RecordForm({
   kind,
   workspaceId,
   record,
+  initialDraft,
   onClose,
   onSaved,
 }: {
   kind: Kind;
   workspaceId: WorkspaceId;
   record?: WorkRecord;
+  initialDraft?: Draft;
   onClose: () => void;
   onSaved?: (r: WorkRecord) => void;
 }) {
@@ -63,7 +65,7 @@ export function RecordForm({
   const [draft, setDraft] = useState<Draft>(() =>
     record
       ? structuredClone(record)
-      : {
+      : (initialDraft ?? {
           kind,
           workspaceId,
           title: "",
@@ -88,7 +90,7 @@ export function RecordForm({
                     : [],
             ),
           ),
-        },
+        }),
   );
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -273,7 +275,7 @@ export function RecordForm({
               onChange={(e) => set("nextAction", e.target.value)}
             />
           </FieldLabel>
-          <details className="rounded-lg border p-3">
+          <details open={kind === "hr-task"} className="rounded-lg border p-3">
             <summary className="cursor-pointer text-sm font-medium">
               {t(
                 "Context, collaborators and advanced details",
@@ -333,13 +335,38 @@ export function RecordForm({
                 .filter((f) => !f.required && !f.options && !f.link)
                 .map((f) => (
                   <FieldLabel key={f.key} en={f.en} ar={f.ar}>
-                    {f.type === "textarea" ? (
+                    {kind === "hr-task" && f.key === "approverId" ? (
+                      <select
+                        className={control}
+                        value={draft.details[f.key] ?? ""}
+                        onChange={(e) => detail(f.key, e.target.value)}
+                      >
+                        <option value="">Select assigned approver</option>
+                        {members
+                          .filter((u) => u.id !== draft.ownerId)
+                          .map((u) => (
+                            <option key={u.id} value={u.id}>
+                              {u.name} — {u.role}
+                            </option>
+                          ))}
+                      </select>
+                    ) : f.type === "textarea" ? (
                       <Textarea
+                        readOnly={
+                          kind === "hr-task" &&
+                          !!draft.details["guideId"] &&
+                          !["approvalReason", "evidenceLink"].includes(f.key)
+                        }
                         value={draft.details[f.key] ?? ""}
                         onChange={(e) => detail(f.key, e.target.value)}
                       />
                     ) : (
                       <Input
+                        readOnly={
+                          kind === "hr-task" &&
+                          !!draft.details["guideId"] &&
+                          !["approverId", "approvalReason", "evidenceLink"].includes(f.key)
+                        }
                         type={f.type ?? "text"}
                         min={f.type === "number" ? "1" : undefined}
                         value={draft.details[f.key] ?? ""}

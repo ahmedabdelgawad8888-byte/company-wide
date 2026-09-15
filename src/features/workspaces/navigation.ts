@@ -16,8 +16,10 @@ export type Module =
   | "collections"
   | "portfolio"
   | "workload"
-  | "commission";
+  | "commission"
+  | "hr-guide";
 export const extras: Record<string, [string, string]> = {
+  "hr-guide": ["HR Task Guide & Schedules", "دليل مهام الموارد البشرية والجداول"],
   home: ["Home", "الرئيسية"],
   dashboard: ["Dashboard", "لوحة التحليلات"],
   "my-work": ["My Workspace", "مساحتي"],
@@ -50,6 +52,8 @@ const work: Record<WorkspaceId, Module[]> = {
   sales: ["action", "client", "meeting", "quotation", "proposal", "contract", "commission", "task"],
   finance: ["bill", "collections", "payment", "commission", "task", "meeting", "overdue"],
   hr: [
+    "hr-guide",
+    "hr-task",
     "employee",
     "people-action",
     "onboarding",
@@ -80,6 +84,41 @@ export const validModules = (w: WorkspaceId): Module[] => [
   "management",
 ];
 export function hubNav(w: WorkspaceId) {
+  if (w === "hr") {
+    const groups: { label: string; labelAr: string; items: [Module, string, string][] }[] = [
+      {
+        label: "HR operations",
+        labelAr: "عمليات الموارد البشرية",
+        items: [
+          ["dashboard", "HR Overview", "نظرة عامة"],
+          ["home", "Task Guide & Schedules", "دليل المهام والجداول"],
+          ["hr-task", "HR Tasks", "مهام الموارد البشرية"],
+          ["employee", "Employee Directory", "دليل الموظفين"],
+          ["calendar", "HR Calendar", "تقويم الموارد البشرية"],
+          ["approval", "Approvals", "الموافقات"],
+        ],
+      },
+      {
+        label: "Evidence & reporting",
+        labelAr: "الأدلة والتقارير",
+        items: [
+          ["file", "Evidence & Files", "الأدلة والملفات"],
+          ["reports", "HR Reports", "تقارير الموارد البشرية"],
+          ["activity", "Activity & Audit", "النشاط والتدقيق"],
+        ],
+      },
+      {
+        label: "HR team",
+        labelAr: "فريق الموارد البشرية",
+        items: [["notifications", "Notifications", "الإشعارات"]],
+      },
+    ];
+    return groups.map((g) => ({
+      ...g,
+      items: g.items.map(([m, label, labelAr]) => ({ to: modulePath(w, m), label, labelAr })),
+    }));
+  }
+
   return [
     ...(w === "pmo"
       ? [

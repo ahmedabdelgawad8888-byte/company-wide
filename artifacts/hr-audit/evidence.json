@@ -1,0 +1,9 @@
+{
+  "source": "HR_Task_Management_Guide.xlsx",
+  "tasks": 56,
+  "categories": 10,
+  "taskFieldsCompared": 560,
+  "instructionsCompared": 9,
+  "differences": [],
+  "passed": true
+}

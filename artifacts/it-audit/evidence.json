@@ -1,0 +1,18 @@
+{
+  "source": "trygc_it_manual.html",
+  "namedPeople": 8,
+  "names": [
+    "Adel Hammad",
+    "A. Sabri",
+    "Mohamed Nasef",
+    "Mahmoud Taha",
+    "Abdelfatah Hamid",
+    "Reda",
+    "Raafat",
+    "Eslam"
+  ],
+  "taskRows": 11,
+  "taskFieldsCompared": 66,
+  "differences": [],
+  "passed": true
+}

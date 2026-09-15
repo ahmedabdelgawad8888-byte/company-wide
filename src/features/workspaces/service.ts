@@ -1,3 +1,4 @@
+import hrGuide from "./hr-guide.json" with { type: "json" };
 import {
   getWorkspaceIdsForUser,
   getWorkspaceLevel,
@@ -54,7 +55,7 @@ export function visible(a: Actor, r: WorkRecord) {
   if (a.scope === "entity" && a.entityId !== r.entityId) return false;
   if (level(a) === "lead") return true;
   if (level(a) === "supervisor") return ownWork(a, r) || reportWork(a, r);
-  return ownWork(a, r);
+  return ownWork(a, r) || (r.kind === "hr-task" && r.details["approverId"] === a.id);
 }
 /** Who this person may put work on: themselves, plus their reports (supervisor) or anyone (lead/admin). */
 export function canAssignTo(a: Actor, ownerId: string) {
@@ -95,6 +96,7 @@ export function permission(
   if (action === "assign")
     return manager(a) || (level(a) === "supervisor" && (!r || reportWork(a, r)));
   if (action === "approve") return !!r && r.ownerId === a.id && r.createdBy !== a.id;
+  if (action === "edit" && r?.kind === "hr-task" && r.details["approverId"] === a.id) return true;
   if (action === "edit")
     return (
       manager(a) || (!!r && (ownWork(a, r) || (level(a) === "supervisor" && reportWork(a, r))))
@@ -161,6 +163,68 @@ function validate(s: HubState, a: Actor, d: Draft, users: Actor[], existing?: Wo
   if (!workspaceKinds[d.workspaceId].includes(d.kind))
     throw new Error("This record type belongs to a different workspace.");
   if (!statuses[d.kind].includes(d.status)) throw new Error("Invalid status for this workflow.");
+  if (d.kind === "hr-task") {
+    if (existing?.details["guideId"] && d.details["guideId"] !== existing.details["guideId"])
+      throw new Error("The source guide task cannot change.");
+    if (d.details["guideId"]) {
+      const source = hrGuide.tasks.find((t) => t.id === d.details["guideId"]);
+      if (!source) throw new Error("Unknown HR guide task.");
+      const expected = {
+        category: source.category,
+        frequency: source.frequency,
+        sourcePriority: source.priority,
+        ownerRole: source.owner,
+        deadline: source.deadline,
+        sla: source.sla,
+        evidence: source.evidence,
+        approver: source.approver,
+        sourceStatus: source.sourceStatus,
+      };
+      for (const [key, value] of Object.entries(expected))
+        if (d.details[key] !== value)
+          throw new Error(
+            "Workbook requirements are fixed. Use task notes for case-specific details.",
+          );
+    }
+
+    const flow = statuses["hr-task"];
+    const oldIndex = existing ? flow.indexOf(existing.status) : 0;
+    const newIndex = flow.indexOf(d.status);
+    if ((!existing && newIndex !== 0) || newIndex > oldIndex + 1)
+      throw new Error("Follow the HR status flow one step at a time.");
+    if (
+      existing?.status === "Approved" &&
+      d.status === "Approved" &&
+      (d.details["approverId"] !== existing.details["approverId"] ||
+        d.details["approvalReason"] !== existing.details["approvalReason"])
+    )
+      throw new Error("Return this task for review before changing its approval.");
+    if (d.status === "Approved" && existing?.status !== "Approved") {
+      if (
+        !d.details["approverId"] ||
+        existing?.details["approverId"] !== a.id ||
+        d.details["approverId"] !== existing.details["approverId"] ||
+        a.id === d.ownerId
+      )
+        throw new Error(
+          "Only the assigned approver, separate from the owner, can approve this HR task.",
+        );
+      if (!d.details["approvalReason"]?.trim()) throw new Error("Record the approval decision.");
+    }
+    if (
+      ["Pending Approval", "Approved", "Completed", "Closed"].includes(d.status) &&
+      !d.details["evidenceLink"]?.trim() &&
+      !s.attachments.some((x) => x.recordId === existing?.id)
+    )
+      throw new Error(
+        "Add the required evidence reference or attachment before approval and completion.",
+      );
+    if (
+      d.details["approverId"] &&
+      !users.some((u) => u.id === d.details["approverId"] && access(u, "hr"))
+    )
+      throw new Error("Choose an active approver with HR workspace access.");
+  }
   if (d.dueDate < d.startDate) throw new Error("Due date must be on or after the start date.");
   if (
     d.ownerId !== a.id &&
@@ -369,6 +433,13 @@ export function updateRecord(s: HubState, a: Actor, recordId: string, d: Draft, 
     r.completedAt = new Date().toISOString();
   } else r.completedAt = "";
   audit(s, a, r, "Updated", before, r);
+  if (
+    r.kind === "hr-task" &&
+    r.status === "Pending Approval" &&
+    before.status !== r.status &&
+    r.details["approverId"]
+  )
+    notify(s, r, r.details["approverId"], `Approval requested: ${r.title}`, id("NOTICE"));
   if (before.ownerId !== r.ownerId)
     notify(s, r, r.ownerId, `${r.title} assigned to you`, id("NOTICE"));
   if (r.kind === "bill" && before.dueDate !== r.dueDate)
@@ -552,7 +623,9 @@ export function runRule(
   });
 }
 export function sweep(s: HubState, a: Actor, day: string, time: string) {
-  for (const r of s.records.filter((r) => visible(a, r) && !closed(r))) {
+  for (const r of s.records.filter(
+    (r) => visible(a, r) && !closed(r) && r.sourceId !== "hr-guide:v1",
+  )) {
     if (
       r.kind === "bill" &&
       !["Promise to Pay", "Partially Paid", "Escalated"].includes(r.status)

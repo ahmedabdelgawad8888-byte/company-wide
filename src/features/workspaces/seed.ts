@@ -227,39 +227,6 @@ export function seedHub(db: {
       },
       0,
     );
-  const emp = add(
-    "employee",
-    "hr",
-    "New joiner · demonstration profile",
-    "hr-lead",
-    {
-      email: "new-joiner@example.invalid",
-      department: "Operations",
-      role: "Operations coordinator",
-      joinDate: day,
-      location: "Cairo",
-    },
-    7,
-    "Onboarding",
-  );
-  add(
-    "people-action",
-    "hr",
-    "Confirm induction and equipment handover",
-    "hr-lead",
-    { employeeId: emp.id, category: "Equipment" },
-    0,
-    "To Do",
-  );
-  add(
-    "people-action",
-    "hr",
-    "Collect probation review form",
-    "hr-specialist",
-    { employeeId: emp.id, category: "Probation review" },
-    3,
-    "To Do",
-  );
   add(
     "request",
     "management",
@@ -289,6 +256,7 @@ export function seedHub(db: {
     0,
   );
   for (const w of WORKSPACES) {
+    if (w.id === "hr") continue;
     const owner =
       db.users.find((u) => workspaceOwnsDepartment(w.id, u.department))?.id ?? "core-essmat";
     s.rules.push({

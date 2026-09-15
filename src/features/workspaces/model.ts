@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { WorkspaceId, WorkspaceLevel } from "../../lib/workspace-hub";
 
 export const kinds = [
+  "hr-task",
   "task",
   "project",
   "decision",
@@ -56,6 +57,7 @@ export type Field = {
   link?: Kind;
 };
 export const titles: Record<Kind, [string, string]> = {
+  "hr-task": ["HR Task", "مهمة موارد بشرية"],
   task: ["Task", "مهمة"],
   project: ["Project", "مشروع"],
   decision: ["Decision", "قرار"],
@@ -93,6 +95,7 @@ export const taskStatuses = [
   "Cancelled",
 ];
 export const statuses: Record<Kind, string[]> = {
+  "hr-task": ["Not Started", "In Progress", "Pending Approval", "Approved", "Completed", "Closed"],
   task: taskStatuses,
   project: [
     "Planned",
@@ -164,6 +167,26 @@ const employee: Field = {
   required: true,
 };
 export const fields: Record<Kind, Field[]> = {
+  "hr-task": [
+    { key: "category", en: "Category", ar: "Category" },
+    { key: "frequency", en: "Frequency", ar: "Frequency" },
+    { key: "sourcePriority", en: "Guide priority", ar: "Guide priority" },
+    { key: "ownerRole", en: "Owner / coordinating roles", ar: "Owner / coordinating roles" },
+    { key: "deadline", en: "Deadline rule", ar: "Deadline rule" },
+    { key: "sla", en: "SLA", ar: "SLA", type: "textarea" },
+    {
+      key: "evidence",
+      en: "Required evidence / report",
+      ar: "Required evidence / report",
+      type: "textarea",
+    },
+    { key: "approver", en: "Approver role", ar: "Approver role" },
+    { key: "approverId", en: "Assigned approver user ID", ar: "Assigned approver user ID" },
+    { key: "sourceStatus", en: "Guide status", ar: "Guide status" },
+    { key: "evidenceLink", en: "Evidence link / reference", ar: "Evidence link / reference" },
+    { key: "approvalReason", en: "Approval decision", ar: "Approval decision" },
+    { key: "guideId", en: "Guide task ID", ar: "Guide task ID" },
+  ],
   task: [
     project,
     { key: "deliverable", en: "Deliverable", ar: "المخرج المطلوب" },
@@ -497,6 +520,8 @@ export const workspaceKinds: Record<WorkspaceId, Kind[]> = {
   ],
   finance: ["bill", "payment", "task", "meeting", "file", "approval"],
   hr: [
+    "hr-task",
+    "routine",
     "employee",
     "onboarding",
     "people-action",
@@ -617,6 +642,8 @@ export type Run = {
   message: string;
 };
 export type SavedView = {
+  category?: string;
+  frequency?: string;
   id: string;
   userId: string;
   workspaceId: WorkspaceId;
@@ -659,23 +686,25 @@ export const dayOffset = (day: string, n: number) => {
 };
 export const closed = (r: WorkRecord) =>
   r.archived ||
-  [
-    "Done",
-    "Completed",
-    "Cancelled",
-    "Resolved",
-    "Paid",
-    "Delivered",
-    "Approved",
-    "Rejected",
-    "Signed",
-    "Closed",
-    "Inactive",
-    "Archived",
-    "Verified",
-  ].includes(r.status);
+  (r.kind === "hr-task"
+    ? ["Completed", "Closed"].includes(r.status)
+    : [
+        "Done",
+        "Completed",
+        "Cancelled",
+        "Resolved",
+        "Paid",
+        "Delivered",
+        "Approved",
+        "Rejected",
+        "Signed",
+        "Closed",
+        "Inactive",
+        "Archived",
+        "Verified",
+      ].includes(r.status));
 export const overdue = (r: WorkRecord, day = today()) =>
-  !closed(r) && !!r.dueDate && r.dueDate < day;
+  r.sourceId !== "hr-guide:v1" && !closed(r) && !!r.dueDate && r.dueDate < day;
 export const attentionScore = (r: WorkRecord, day = today()) =>
   closed(r)
     ? 0

@@ -1,3 +1,4 @@
+import { reconcileOperationalPeople } from "./people-reconciliation";
 import {
   createContext,
   useCallback,
@@ -16,6 +17,8 @@ import { emptyState, sweep, visible } from "./service";
 import { today, type Actor, type HubState } from "./model";
 import { ensureITWorkspace } from "./it-seed";
 import { ensurePmoWorkspace, pmoOwners } from "./pmo-seed";
+
+import { ensureHRWorkspace, runHRSchedules } from "./hr-workspace";
 
 type HubContext = {
   state: HubState;
@@ -74,11 +77,13 @@ export function HubProvider({ children }: { children: ReactNode }) {
       repo.current = new LocalRepository(window.localStorage);
       const stored = repo.current.load();
       const next = stored ?? seedHub(initialDb.current);
+      const hrAdded = ensureHRWorkspace(next, users);
+      const peopleChanged = reconcileOperationalPeople(next, users);
       if (!stored) repo.current.save(next, 0);
       else {
         const itAdded = ensureITWorkspace(next, users);
         const pmoAdded = ensurePmoWorkspace(next, users);
-        if (itAdded || pmoAdded) {
+        if (itAdded || pmoAdded || hrAdded || peopleChanged) {
           const previousRevision = next.revision;
           next.revision += 1;
           repo.current.save(next, previousRevision);
@@ -173,6 +178,7 @@ export function HubProvider({ children }: { children: ReactNode }) {
       try {
         const base = latest.current;
         const next = structuredClone(base);
+        runHRSchedules(next, actor, users, today());
         sweep(next, actor, today(), new Date().toTimeString().slice(0, 5));
         if (JSON.stringify(next) !== JSON.stringify(base)) {
           next.revision = base.revision + 1;
@@ -214,5 +220,5 @@ export function useHub() {
 }
 export function useRecords() {
   const { state, actor } = useHub();
-  return state.records.filter((r) => visible(actor, r));
+  return state.records.filter((r) => visible(actor, r) && r.sourceId !== "hr-guide:v1");
 }

@@ -1,9 +1,16 @@
 import type { WorkspaceId } from "../../lib/workspace-hub";
-import { dayOffset, today, type Actor, type HubState, type Kind, type WorkRecord } from "./model";
+import {
+  dayOffset,
+  today,
+  type Actor,
+  type HubState,
+  type Kind,
+  type WorkRecord,
+} from "./model.ts";
 
 const IT_WORKSPACE: WorkspaceId = "it";
-const PRIMARY_OWNER = "it-mahmoud";
-const BACKUP_OWNER = "u13";
+const PRIMARY_OWNER = "core-sabry";
+const BACKUP_OWNER = "it-nasef";
 
 type RoutineSeed = {
   title: string;

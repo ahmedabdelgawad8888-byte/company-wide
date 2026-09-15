@@ -131,7 +131,9 @@ export function RecordDetail({ recordId, onClose }: { recordId: string; onClose:
           </h1>
           <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
             <span className="rounded-full bg-muted px-2.5 py-1 font-medium">{r.status}</span>
-            <span className="rounded-full bg-muted px-2.5 py-1">{r.priority}</span>
+            <span className="rounded-full bg-muted px-2.5 py-1">
+              {r.kind === "hr-task" ? r.details["sourcePriority"] || r.priority : r.priority}
+            </span>
             {overdue(r) && (
               <span className="rounded-full bg-destructive/10 px-2.5 py-1 font-medium text-destructive">
                 {t("Overdue", "متأخر")}

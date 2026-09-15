@@ -24,6 +24,8 @@ export function WorkTable({
   const { state, actor, users, transact } = useHub();
   const { t } = useLang();
   const [query, setQuery] = useState("");
+  const [category, setCategory] = useState("");
+  const [frequency, setFrequency] = useState("");
   const [status, setStatus] = useState("all");
   // Leads and supervisors open on their full scope; members open on their own work.
   const [owner, setOwner] = useState(supervisor(actor) ? "all" : actor.id);
@@ -32,6 +34,8 @@ export function WorkTable({
   const [saving, setSaving] = useState(false);
   const filtered = rows.filter(
     (r) =>
+      (!category || r.details["category"] === category) &&
+      (!frequency || r.details["frequency"] === frequency) &&
       (status === "all" || status === "overdue"
         ? status === "all" || overdue(r)
         : r.status === status) &&
@@ -87,7 +91,8 @@ export function WorkTable({
       key: "priority",
       header: t("Priority", "الأولوية"),
       sortValue: (r) => r.priority,
-      render: (r) => r.priority,
+      render: (r) =>
+        r.kind === "hr-task" ? r.details["sourcePriority"] || r.priority : r.priority,
     },
     {
       key: "dueDate",
@@ -116,6 +121,16 @@ export function WorkTable({
       ),
     },
   ];
+  if (workspaceId === "hr" && rows.some((r) => r.kind === "hr-task"))
+    columns.splice(
+      1,
+      0,
+      ...["category", "frequency"].map((key) => ({
+        key,
+        header: key === "category" ? "Category" : "Frequency",
+        render: (r: WorkRecord) => r.details[key] || "—",
+      })),
+    );
   if (rows.some((r) => r.kind === "bill" || r.kind === "payment"))
     columns.splice(3, 0, {
       key: "amount",
@@ -157,6 +172,8 @@ export function WorkTable({
           module,
           name: savedName.trim(),
           query,
+          category,
+          frequency,
           status,
           owner,
           view,
@@ -170,7 +187,7 @@ export function WorkTable({
     }
   };
   const options = Array.from(new Set(rows.map((r) => r.status)));
-  const advanced = ["task", "project", "portfolio", "my-work"].includes(module);
+  const advanced = ["task", "hr-task", "project", "portfolio", "my-work"].includes(module);
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2">
@@ -181,6 +198,32 @@ export function WorkTable({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
+        {workspaceId === "hr" && module === "hr-task" && (
+          <>
+            <select
+              aria-label="Task category"
+              className={control + " !w-auto max-w-full"}
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+            >
+              <option value="">All categories</option>
+              {[...new Set(rows.map((r) => r.details["category"]).filter(Boolean))].map((c) => (
+                <option key={c}>{c}</option>
+              ))}
+            </select>
+            <select
+              aria-label="Task frequency"
+              className={control + " !w-auto max-w-full"}
+              value={frequency}
+              onChange={(e) => setFrequency(e.target.value)}
+            >
+              <option value="">All frequencies</option>
+              {[...new Set(rows.map((r) => r.details["frequency"]).filter(Boolean))].map((c) => (
+                <option key={c}>{c}</option>
+              ))}
+            </select>
+          </>
+        )}
         <select
           aria-label="Status filter"
           className={control + " !w-auto"}
@@ -212,11 +255,13 @@ export function WorkTable({
         <Button variant="outline" onClick={() => setSaving((v) => !v)}>
           {t("Save view", "حفظ العرض")}
         </Button>
-        {(query || status !== "all" || owner !== "all") && (
+        {(query || category || frequency || status !== "all" || owner !== "all") && (
           <Button
             variant="ghost"
             onClick={() => {
               setQuery("");
+              setCategory("");
+              setFrequency("");
               setStatus("all");
               setOwner("all");
             }}
@@ -248,6 +293,8 @@ export function WorkTable({
                 variant="ghost"
                 onClick={() => {
                   setQuery(v.query);
+                  setCategory(v.category ?? "");
+                  setFrequency(v.frequency ?? "");
                   setStatus(v.status);
                   setOwner(v.owner);
                   setView(v.view);
@@ -307,6 +354,8 @@ export function WorkTable({
             variant="outline"
             onClick={() => {
               setOwner("all");
+              setCategory("");
+              setFrequency("");
               setQuery("");
               setStatus("all");
             }}

@@ -1,3 +1,4 @@
+import { UserDirectory } from "./user-directory";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, AlertTriangle, Clock3, CheckCircle2, Plus, Users } from "lucide-react";
@@ -28,13 +29,15 @@ import { RecordForm } from "./record-form";
 import { RecordDetail } from "./record-detail";
 import { WorkTable, WorkCalendar, Workload } from "./work-views";
 import { AutomationCenter } from "./automation-center";
+import { HRReports, HREvidence } from "./hr-reports";
+import { HRGuide } from "./hr-guide-panel";
 import { CommissionCenter } from "./commission-panel";
 
 const homeTitles: Record<WorkspaceId, [string, string]> = {
   management: ["Management Command Room", "غرفة قيادة الإدارة"],
   sales: ["My Sales Day", "يومي في المبيعات"],
   finance: ["My Finance Day", "يومي في الحسابات"],
-  hr: ["People Operations Today", "عمليات الموظفين اليوم"],
+  hr: ["HR Task Guide & Schedules", "دليل مهام الموارد البشرية والجداول"],
   it: ["IT Operations Control Room", "غرفة عمليات تقنية المعلومات"],
   pmo: ["PMO Dashboard", "لوحة مكتب إدارة المشاريع"],
 };
@@ -48,7 +51,7 @@ const defaultKind: Record<WorkspaceId, Kind> = {
   management: "project",
   sales: "action",
   finance: "bill",
-  hr: "people-action",
+  hr: "hr-task",
   it: "routine",
   pmo: "project",
 };
@@ -71,7 +74,7 @@ export function HubPage({
   const [selected, setSelected] = useState<string | null>(null);
   const allowed = access(actor, workspaceId);
   const ws = getWorkspace(workspaceId);
-  const rows = all.filter((r) => r.workspaceId === workspaceId);
+  const rows = all.filter((r) => r.workspaceId === workspaceId && r.sourceId !== "hr-guide:v1");
   useEffect(() => {
     if (allowed && activeWorkspace !== workspaceId) setActiveWorkspace(workspaceId);
   }, [allowed, workspaceId, activeWorkspace, setActiveWorkspace]);
@@ -188,14 +191,20 @@ export function HubPage({
             {t(ws.purpose, ws.purposeAr)}
           </p>
         </div>
-        {permission(actor, workspaceId, "create") && (
-          <Button onClick={() => setCreate(quick)}>
-            <Plus className="size-4" />
-            {t("Create", "إنشاء")} {t(...titles[quick])}
-          </Button>
-        )}
+        {permission(actor, workspaceId, "create") &&
+          !(
+            (workspaceId === "hr" && ["employee", "people"].includes(module)) ||
+            (workspaceId === "it" && module === "people")
+          ) && (
+            <Button onClick={() => setCreate(quick)}>
+              <Plus className="size-4" />
+              {t("Create", "إنشاء")} {t(...titles[quick])}
+            </Button>
+          )}
       </header>
-      {module === "dashboard" ? (
+      {workspaceId === "hr" && (module === "hr-guide" || module === "home") ? (
+        <HRGuide onOpen={open} />
+      ) : module === "dashboard" ? (
         <WorkspaceDashboard rows={rows} workspaceId={workspaceId} onOpen={open} />
       ) : module === "home" ? (
         <Home rows={rows} workspaceId={workspaceId} onOpen={open} />
@@ -217,13 +226,30 @@ export function HubPage({
       ) : module === "calendar" ? (
         <WorkCalendar rows={rows} onOpen={open} />
       ) : module === "reports" ? (
-        <Reports rows={rows} />
+        workspaceId === "hr" ? (
+          <HRReports rows={rows} onOpen={open} />
+        ) : (
+          <Reports rows={rows} />
+        )
       ) : module === "workload" ? (
         <Workload rows={rows} />
+      ) : workspaceId === "hr" && module === "file" ? (
+        <>
+          <HREvidence rows={rows} onOpen={open} />
+          <WorkTable
+            rows={rows.filter((r) => r.kind === "file")}
+            workspaceId={workspaceId}
+            module={module}
+            onOpen={open}
+          />
+        </>
       ) : module === "automations" ? (
         <AutomationCenter workspaceId={workspaceId} />
       ) : module === "commission" && (workspaceId === "sales" || workspaceId === "finance") ? (
         <CommissionCenter workspaceId={workspaceId} rows={rows} onOpen={open} />
+      ) : (workspaceId === "hr" && (module === "employee" || module === "people")) ||
+        (workspaceId === "it" && module === "people") ? (
+        <UserDirectory workspaceId={workspaceId} />
       ) : module === "people" ? (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {users
@@ -304,7 +330,15 @@ export function HubPage({
           key={`${workspaceId}:${module}:${actor.id}`}
           rows={
             kind
-              ? rows.filter((r) => r.kind === kind && (module !== "collections" || !closed(r)))
+              ? rows.filter(
+                  (r) =>
+                    (r.kind === kind ||
+                      (workspaceId === "hr" &&
+                        module === "approval" &&
+                        r.kind === "hr-task" &&
+                        r.status === "Pending Approval")) &&
+                    (module !== "collections" || !closed(r)),
+                )
               : rows.filter((r) => overdue(r))
           }
           workspaceId={workspaceId}

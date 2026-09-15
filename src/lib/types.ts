@@ -28,6 +28,8 @@ export type Health = "green" | "amber" | "red" | "critical";
 export type RAG = "green" | "amber" | "red";
 
 export interface User {
+  source?: string;
+  jobTitle?: string;
   id: string;
   name: string;
   email: string;

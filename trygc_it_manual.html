@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TryGC IT Operations Manual</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Light Theme */
+            --bg-body: #f8fafc;
+            --bg-surface: #ffffff;
+            --bg-raised: #f1f5f9;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --border-hover: #cbd5e1;
+
+            --primary: #4f46e5;
+            --primary-bg: #e0e7ff;
+            --secondary: #0ea5e9;
+
+            --success: #10b981;
+            --success-bg: #d1fae5;
+            --warning: #f59e0b;
+            --warning-bg: #fef3c7;
+            --danger: #ef4444;
+            --danger-bg: #fee2e2;
+            --wait: #8b5cf6;
+            --wait-bg: #ede9fe;
+
+            --font-sans: 'Inter', system-ui, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        :root[data-theme="dark"] {
+            /* Dark Theme */
+            --bg-body: #0f172a;
+            --bg-surface: #1e293b;
+            --bg-raised: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --border-hover: #475569;
+
+            --primary: #818cf8;
+            --primary-bg: #3730a3;
+
+            --success: #34d399;
+            --success-bg: #065f46;
+            --warning: #fbbf24;
+            --warning-bg: #78350f;
+            --danger: #f87171;
+            --danger-bg: #7f1d1d;
+            --wait: #a78bfa;
+            --wait-bg: #5b21b6;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* Typography */
+        h1, h2, h3, h4 { font-weight: 700; line-height: 1.2; color: var(--text-main); }
+        h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        h2 { font-size: 1.5rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
+        h3 { font-size: 1.125rem; margin-top: 1.5rem; margin-bottom: 0.75rem; }
+        p, ul, ol { margin-bottom: 1rem; color: var(--text-muted); font-size: 0.95rem; }
+        ul, ol { padding-left: 1.5rem; }
+        li { margin-bottom: 0.25rem; }
+        strong { color: var(--text-main); font-weight: 600; }
+        a { color: var(--primary); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        /* Layout */
+        .app-container {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            min-height: 100vh;
+        }
+
+        /* Header / Topbar */
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background-color: rgba(var(--bg-surface), 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-surface);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .brand-logo {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            font-weight: 700;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            letter-spacing: 1px;
+        }
+
+        .search-container {
+            flex: 1;
+            max-width: 400px;
+            position: relative;
+            margin: 0 2rem;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.5rem 1rem 0.5rem 2.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg-raised);
+            color: var(--text-main);
+            font-size: 0.875rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-input:focus { border-color: var(--primary); }
+        .search-icon {
+            position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%);
+            color: var(--text-muted); width: 16px; height: 16px;
+        }
+
+        .controls { display: flex; gap: 0.5rem; }
+        .btn {
+            padding: 0.375rem 0.75rem; border-radius: 6px; font-size: 0.875rem; font-weight: 500;
+            cursor: pointer; border: 1px solid var(--border); background: var(--bg-surface);
+            color: var(--text-main); display: inline-flex; align-items: center; gap: 0.5rem;
+            transition: all 0.2s;
+        }
+        .btn:hover { border-color: var(--border-hover); background: var(--bg-raised); }
+        .btn-primary { background: var(--primary); color: white; border-color: var(--primary); }
+        .btn-primary:hover { opacity: 0.9; background: var(--primary); }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            padding: 2rem 1.5rem;
+            border-right: 1px solid var(--border);
+            height: calc(100vh - 60px);
+            position: sticky;
+            top: 60px;
+            overflow-y: auto;
+        }
+
+        .nav-link {
+            display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.5rem 0.75rem; margin-bottom: 0.25rem;
+            border-radius: 6px; color: var(--text-muted);
+            font-size: 0.875rem; text-decoration: none;
+            transition: background 0.2s, color 0.2s;
+        }
+        .nav-link:hover { background: var(--bg-raised); color: var(--text-main); text-decoration: none; }
+        .nav-link.active { background: var(--primary-bg); color: var(--primary); font-weight: 600; }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 2rem 3rem 4rem;
+            min-width: 0; /* Prevents overflow */
+        }
+
+        .section-block {
+            margin-bottom: 3.5rem;
+            scroll-margin-top: 80px;
+        }
+
+        /* Components */
+        .card {
+            background: var(--bg-surface); border: 1px solid var(--border);
+            border-radius: 12px; padding: 1.5rem; box-shadow: var(--shadow-sm);
+        }
+
+        .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; }
+        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+        .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; }
+
+        .stat-card {
+            background: var(--bg-surface); border: 1px solid var(--border);
+            border-radius: 8px; padding: 1rem; display: flex; flex-direction: column;
+        }
+        .stat-val { font-size: 1.5rem; font-weight: 700; color: var(--text-main); font-family: var(--font-mono); }
+        .stat-label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); }
+
+        /* Badges & Pills */
+        .badge {
+            display: inline-flex; align-items: center; padding: 0.125rem 0.5rem;
+            border-radius: 999px; font-size: 0.75rem; font-weight: 600; font-family: var(--font-mono);
+        }
+        .badge-high { background: var(--danger-bg); color: var(--danger); }
+        .badge-med { background: var(--warning-bg); color: var(--warning); }
+        .badge-low { background: var(--bg-raised); color: var(--text-muted); }
+        .badge-done { background: var(--success-bg); color: var(--success); }
+        .badge-prog { background: var(--primary-bg); color: var(--primary); }
+        .badge-wait { background: var(--wait-bg); color: var(--wait); }
+
+        /* Tables */
+        .table-container {
+            width: 100%; overflow-x: auto;
+            border: 1px solid var(--border); border-radius: 8px;
+            background: var(--bg-surface);
+        }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.875rem; }
+        th, td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); }
+        th { background: var(--bg-raised); font-weight: 600; color: var(--text-muted); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em;}
+        tr:last-child td { border-bottom: none; }
+        tr:hover { background: var(--bg-raised); }
+
+        /* Accordion (SOPs) */
+        details {
+            background: var(--bg-surface); border: 1px solid var(--border);
+            border-radius: 8px; margin-bottom: 0.5rem; overflow: hidden;
+        }
+        summary {
+            padding: 1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center;
+            background: var(--bg-raised); list-style: none; user-select: none;
+        }
+        summary::-webkit-details-marker { display: none; }
+        summary::before {
+            content: '▶'; display: inline-block; margin-right: 0.75rem;
+            font-size: 0.75rem; color: var(--text-muted); transition: transform 0.2s;
+        }
+        details[open] summary::before { transform: rotate(90deg); }
+        .details-content { padding: 1rem; border-top: 1px solid var(--border); }
+
+        /* Org Chart / Profiles */
+        .org-chart { display: flex; flex-direction: column; align-items: stretch; overflow-x: auto; padding-bottom: 1rem; }
+        .org-chart-inner { min-width: 800px; display: flex; flex-direction: column; align-items: stretch; margin: 0 auto; padding: 0 1rem; }
+        .org-tier { display: flex; gap: 1.5rem; position: relative; }
+        .org-tier.single { justify-content: center; }
+        .org-tier.single > .profile-card { flex: 0 1 320px; }
+        .org-stem { height: 1.5rem; width: 2px; background: var(--border); margin: 0 auto; }
+        .org-tier.branched { padding-top: 1.5rem; }
+        .org-tier.branched::before { content: ""; position: absolute; top: 0; height: 2px; background: var(--border); }
+        .org-tier.branched.cols-3::before { left: 16.666%; right: 16.666%; }
+        .org-tier.branched.cols-2::before { left: 25%; right: 25%; }
+        .org-tier > .profile-card { flex: 1 1 0; position: relative; }
+        .org-tier.branched > .profile-card::before { content: ""; position: absolute; top: -1.5rem; left: 50%; width: 2px; height: 1.5rem; background: var(--border); transform: translateX(-50%); }
+        .org-label { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-muted); text-align: center; padding: 0.5rem 0 0; }
+
+        .profile-card {
+            display: flex; flex-direction: column; gap: 0.5rem;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-top: 4px solid var(--border);
+            padding: 1.25rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow-sm);
+            z-index: 2;
+        }
+        .profile-card.lead { border-top-color: var(--primary); }
+        .profile-card.exec { border-top-color: var(--warning); }
+        .profile-name { font-weight: 700; color: var(--text-main); }
+        .profile-role { font-size: 0.75rem; color: var(--primary); font-family: var(--font-mono); text-transform: uppercase; }
+        .profile-desc { font-size: 0.875rem; color: var(--text-muted); line-height: 1.4; }
+
+        /* Cadence Timeline */
+        .timeline-item { display: flex; gap: 1rem; margin-bottom: 1rem; align-items: baseline; }
+        .timeline-time { font-family: var(--font-mono); font-weight: 600; color: var(--primary); width: 60px; flex-shrink: 0; }
+        .timeline-content { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem 1rem; flex: 1; }
+
+        mark { background-color: var(--warning-bg); color: var(--text-main); padding: 0 0.2rem; border-radius: 2px; }
+        .hidden { display: none !important; }
+
+        /* Print */
+        @media print {
+            .topbar, .sidebar { display: none !important; }
+            .app-container { display: block; max-width: 100%; margin: 0; padding: 0; }
+            .main-content { padding: 0; }
+            body { background: white; color: black; }
+            details[open] .details-content, details .details-content { display: block; }
+            summary::before { content: ''; }
+            .section-block { page-break-inside: avoid; }
+        }
+
+        @media (max-width: 768px) {
+            .app-container { flex-direction: column; }
+            .sidebar { width: 100%; height: auto; position: static; border-right: none; border-bottom: 1px solid var(--border); padding: 1rem; display: flex; overflow-x: auto; white-space: nowrap; }
+            .nav-link { display: inline-flex; margin-right: 0.5rem; }
+            .main-content { padding: 1rem; }
+            .search-container { display: none; } /* Simplified mobile header */
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="topbar">
+        <div class="brand">
+            <div class="brand-logo">GC</div>
+            <div>
+                <div style="font-weight: 600; font-size: 0.95rem;">IT Operations</div>
+                <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Master Manual & SOP</div>
+            </div>
+        </div>
+
+        <div class="search-container">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" id="searchInput" class="search-input" placeholder="Search processes, roles, tools...">
+        </div>
+
+        <div class="controls">
+            <button class="btn" id="themeToggle" title="Toggle Theme">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+            </button>
+            <button class="btn btn-primary" onclick="window.print()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7"></path><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                Export PDF
+            </button>
+        </div>
+    </header>
+
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 0.5rem; font-weight: 600;">Contents</div>
+            <nav id="navMenu">
+                <a href="#overview" class="nav-link active">Overview</a>
+                <a href="#team" class="nav-link">Team & Directory</a>
+                <a href="#framework" class="nav-link">Framework & SLAs</a>
+                <a href="#sops" class="nav-link">SOPs (Procedures)</a>
+                <a href="#cadence" class="nav-link">Daily Cadence</a>
+                <a href="#approvals" class="nav-link">Approvals Matrix</a>
+                <a href="#register" class="nav-link">Task Register</a>
+                <a href="#systems" class="nav-link">Tools & Systems</a>
+            </nav>
+
+            <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+                <div style="font-size: 0.7rem; color: var(--text-muted);">
+                    <strong>Version:</strong> 1.0 Unified<br>
+                    <strong>Effective:</strong> Sep 14, 2026<br>
+                    <strong>Classification:</strong> Internal
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <!-- 1. Overview -->
+            <section id="overview" class="section-block">
+                <h1>Overview & Scope</h1>
+                <p>One unified reference for how IT operates, tracked via our 3 live task boards, serving internal teams across 4 regional branches. This document defines ownership, processes, and service level agreements (SLAs).</p>
+
+                <div class="grid-4 mt-4">
+                    <div class="stat-card"><span class="stat-val">4</span><span class="stat-label">Regions (EG, KSA, KW, UAE)</span></div>
+                    <div class="stat-card"><span class="stat-val">3</span><span class="stat-label">Live Trackers</span></div>
+                    <div class="stat-card"><span class="stat-val">11</span><span class="stat-label">Core Systems</span></div>
+                    <div class="stat-card"><span class="stat-val">170+</span><span class="stat-label">Active Tasks</span></div>
+                </div>
+            </section>
+
+            <!-- 2. Team Directory -->
+            <section id="team" class="section-block">
+                <h2>Team Directory & Roles</h2>
+                <div class="org-chart">
+                    <div class="org-chart-inner">
+                        <div class="org-tier single">
+                            <div class="profile-card exec">
+                                <span class="profile-role">Executive</span>
+                                <span class="profile-name">Adel Hammad</span>
+                                <span class="profile-desc">CEO. Final authority on budget, vendors, and org change.</span>
+                            </div>
+                        </div>
+                        <div class="org-stem"></div>
+                        <div class="org-tier single">
+                            <div class="profile-card lead">
+                                <span class="profile-role">IT Lead / Manager</span>
+                                <span class="profile-name">A. Sabri</span>
+                                <span class="profile-desc">Approves requests, assigns work, reviews status.<br><em style="font-size:0.75rem; color:var(--text-muted); display:inline-block; margin-top:0.5rem;">Tools: OsTicket, ClickUp, Zoho CRM</em></span>
+                            </div>
+                        </div>
+                        <div class="org-stem"></div>
+                        <div class="org-tier branched cols-3">
+                            <div class="profile-card">
+                                <span class="profile-role">Senior IT Engineer</span>
+                                <span class="profile-name">Mohamed Nasef</span>
+                                <span class="profile-desc">Infrastructure, MDM, deployments, network.<br><em style="font-size:0.75rem; color:var(--text-muted); display:inline-block; margin-top:0.5rem;">Tools: MDM, GitHub, RDP, Zabbix</em></span>
+                            </div>
+                            <div class="profile-card">
+                                <span class="profile-role">IT Engineer</span>
+                                <span class="profile-name">Mahmoud Taha</span>
+                                <span class="profile-desc">Backups, servers, Sophos, HR systems.<br><em style="font-size:0.75rem; color:var(--text-muted); display:inline-block; margin-top:0.5rem;">Tools: Veeam, Sophos, TrueNAS</em></span>
+                            </div>
+                            <div class="profile-card">
+                                <span class="profile-role">HR / Finance Liaison</span>
+                                <span class="profile-name">Abdelfatah Hamid</span>
+                                <span class="profile-desc">Payment records, invoice reconciliation, onboarding coordination.<br><em style="font-size:0.75rem; color:var(--text-muted); display:inline-block; margin-top:0.5rem;">Tools: HR System, Finance records</em></span>
+                            </div>
+                        </div>
+                        <div class="org-stem"></div>
+                        <div class="org-label">Technical direction from Senior IT</div>
+                        <div class="org-stem"></div>
+                        <div class="org-tier branched cols-2">
+                            <div class="profile-card">
+                                <span class="profile-role">IT Support</span>
+                                <span class="profile-name">Reda, Raafat, Eslam</span>
+                                <span class="profile-desc">Daily verifications, router tests, asset reviews, social accounts, Tier-1 tickets.</span>
+                            </div>
+                            <div class="profile-card">
+                                <span class="profile-role">Help Desk</span>
+                                <span class="profile-name">Tier-1 Support</span>
+                                <span class="profile-desc">First-line tickets, guided by senior IT.<br><em style="font-size:0.75rem; color:var(--text-muted); display:inline-block; margin-top:0.5rem;">Tools: OsTicket, Internal tools</em></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. Framework -->
+            <section id="framework" class="section-block">
+                <h2>Task Framework & SLAs</h2>
+                <p>Every task must have an Owner, Priority, Status, and % Completion to be considered valid in the trackers.</p>
+                <div class="grid-2">
+                    <div class="table-container">
+                        <table>
+                            <thead><tr><th>Priority</th><th>SLA / Target</th></tr></thead>
+                            <tbody>
+                                <tr><td><span class="badge badge-high">High</span> (Blockers, Security)</td><td><strong>Same business day</strong></td></tr>
+                                <tr><td><span class="badge badge-med">Medium</span> (Standard ops)</td><td>2–3 business days</td></tr>
+                                <tr><td><span class="badge badge-low">Low</span> (Housekeeping)</td><td>Next available slot</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead><tr><th>Status</th><th>Meaning</th></tr></thead>
+                            <tbody>
+                                <tr><td><span class="badge badge-wait">Waiting</span></td><td>Blocked by external party or approval</td></tr>
+                                <tr><td><span class="badge badge-prog">In Progress</span></td><td>Actively being worked on</td></tr>
+                                <tr><td><span class="badge badge-low">On Hold</span></td><td>Paused, no capacity or postponed</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. SOPs -->
+            <section id="sops" class="section-block searchable-area">
+                <h2>Standard Operating Procedures (SOPs)</h2>
+
+                <details>
+                    <summary>Onboarding & Offboarding</summary>
+                    <div class="details-content">
+                        <h4>New Employee Onboarding</h4>
+                        <ol>
+                            <li>Receive HR request for specific region (KSA, KW, UAE, Mansoura).</li>
+                            <li>Provision laptop, mobile device, accounts, and access permissions.</li>
+                            <li>Connect to branch Wi-Fi and validate connectivity.</li>
+                            <li>Log assets in the IT Asset Management System.</li>
+                            <li>Mark task `Completed` only after final setup verification by user.</li>
+                        </ol>
+                        <h4 style="margin-top: 1rem;">Offboarding</h4>
+                        <ol>
+                            <li>Receive offboarding ticket.</li>
+                            <li>Instantly revoke accounts, access, email forwards.</li>
+                            <li>Lock/Wipe device via MDM / Sophos.</li>
+                            <li>Recover physical assets and update inventory.</li>
+                        </ol>
+                    </div>
+                </details>
+
+                <details>
+                    <summary>Infrastructure & Backups</summary>
+                    <div class="details-content">
+                        <ul>
+                            <li><strong>Backups:</strong> Daily Veeam checks, immutable Debian/TrueNAS jobs. Log every failure in OsTicket.</li>
+                            <li><strong>Servers:</strong> Weekly UAE server health checks, restore-to-VM testing.</li>
+                            <li><strong>Network:</strong> Daily router tests, VLAN troubleshooting, DHCP pool management.</li>
+                            <li><strong>Security:</strong> Enforce Sophos on all endpoints. Enforce MDM policies on mobile assets.</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details>
+                    <summary>Asset Management & MDM</summary>
+                    <div class="details-content">
+                        <ul>
+                            <li>No duplicate names allowed in the live IT Asset Management System.</li>
+                            <li>Track laptop locations across all branches.</li>
+                            <li>Use ManageEngine/Custom MDM for remote mobile control.</li>
+                            <li>Run periodic physical reconciliation per branch (Mansoura, Cairo, KSA, KW, UAE).</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details>
+                    <summary>Social Media, WhatsApp & Sharing</summary>
+                    <div class="details-content">
+                        <ul>
+                            <li>Configure new social accounts (Instagram, WhatsApp Pro) with mandatory branding and 2FA.</li>
+                            <li>Audit active/restricted accounts and revoke access for departed staff.</li>
+                            <li>WhatsApp: Convert personal to business, verify Meta status.</li>
+                            <li>pCloud: Remove duplicates, manage folder sizes, transfer file ownership only with IT Lead sign-off.</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details>
+                    <summary>Finance & Subscriptions</summary>
+                    <div class="details-content">
+                        <ul>
+                            <li>Reconcile payment history and file new invoices automatically.</li>
+                            <li>Update payment cards for subscribed platforms (Requires Finance Holder coordination).</li>
+                            <li>Proactively request refunds for unused seats (e.g., ClickUp).</li>
+                        </ul>
+                    </div>
+                </details>
+            </section>
+
+            <!-- 5. Cadence -->
+            <section id="cadence" class="section-block searchable-area">
+                <h2>Daily & Weekly Cadence</h2>
+                <div class="timeline-item">
+                    <div class="timeline-time">08:30</div>
+                    <div class="timeline-content">
+                        <strong>Router & Network Test</strong>
+                        <p style="margin:0; font-size:0.8rem;">Owner: Nasef / Reda / Eslam / Taha (Rotating)</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-time">09:30</div>
+                    <div class="timeline-content">
+                        <strong>Veeam Backup Check</strong>
+                        <p style="margin:0; font-size:0.8rem;">Owner: Mahmoud Taha. Verify job success, log failures.</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-time">10:30</div>
+                    <div class="timeline-content">
+                        <strong>Number / SIM Verification</strong>
+                        <p style="margin:0; font-size:0.8rem;">Owner: Support Team. As scheduled.</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-time">16:30</div>
+                    <div class="timeline-content">
+                        <strong>Organize & Classify Groups</strong>
+                        <p style="margin:0; font-size:0.8rem;">Owner: Full Team.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 6. Approvals -->
+            <section id="approvals" class="section-block searchable-area">
+                <h2>Approvals & Escalation Matrix</h2>
+                <div class="table-container">
+                    <table>
+                        <thead><tr><th>Scenario</th><th>Required Approval</th><th>Escalation Path</th></tr></thead>
+                        <tbody>
+                            <tr><td>New employee access / Onboarding</td><td>HR + IT Lead</td><td>IT Lead → Dept Head</td></tr>
+                            <tr><td>Subscription / Payment change</td><td>Finance (Mr. Fetouh) + IT Lead</td><td>IT Lead → Finance</td></tr>
+                            <tr><td>Server / VPS hardware purchase</td><td>IT Lead + Eng. Esmail</td><td>IT Lead → Procurement</td></tr>
+                            <tr><td>External vendor engagement</td><td>IT Lead</td><td>IT Lead → Management (CEO)</td></tr>
+                            <tr><td>Overdue <span class="badge badge-high">High</span> priority task</td><td>Mandatory Status Note</td><td>Task Owner → IT Lead (within 24h)</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 7. Task Register -->
+            <section id="register" class="section-block">
+                <div style="display:flex; justify-content: space-between; align-items:flex-end; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
+                    <h2 style="margin:0; border:none; padding:0;">Live Task Register</h2>
+
+                    <div style="display: flex; gap: 0.5rem;">
+                        <select id="filterPriority" class="search-input" style="padding: 0.25rem 0.5rem; width: auto;">
+                            <option value="all">All Priorities</option>
+                            <option value="High">High</option>
+                            <option value="Medium">Medium</option>
+                            <option value="Low">Low</option>
+                        </select>
+                        <select id="filterStatus" class="search-input" style="padding: 0.25rem 0.5rem; width: auto;">
+                            <option value="all">All Statuses</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Waiting">Waiting</option>
+                            <option value="Completed">Completed</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table id="taskTable">
+                        <thead>
+                            <tr>
+                                <th>Ref</th>
+                                <th>Task Subject</th>
+                                <th>Owner</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>Progress</th>
+                            </tr>
+                        </thead>
+                        <tbody id="taskBody">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 8. Systems -->
+            <section id="systems" class="section-block searchable-area">
+                <h2>Tools & Systems Inventory</h2>
+                <div class="grid-3">
+                    <div class="card"><div class="profile-role">OsTicket</div><strong>Ticketing & SLA</strong><p style="margin:0;font-size:0.8rem">Nasef / Taha</p></div>
+                    <div class="card"><div class="profile-role">ClickUp</div><strong>Task Management</strong><p style="margin:0;font-size:0.8rem">IT / Esmail</p></div>
+                    <div class="card"><div class="profile-role">Veeam / TrueNAS</div><strong>Backups & Storage</strong><p style="margin:0;font-size:0.8rem">Mahmoud Taha</p></div>
+                    <div class="card"><div class="profile-role">Sophos</div><strong>Endpoint Security</strong><p style="margin:0;font-size:0.8rem">Mahmoud Taha</p></div>
+                    <div class="card"><div class="profile-role">Zabbix</div><strong>Infra Monitoring</strong><p style="margin:0;font-size:0.8rem">Raafat / Nasef</p></div>
+                    <div class="card"><div class="profile-role">MDM</div><strong>Mobile Device Ctrl</strong><p style="margin:0;font-size:0.8rem">Mohamed Nasef</p></div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        // Data
+        const tasks = [
+            {ref:"1",  task:"Employee Onboarding (Saudi Arabia)", owner:"Nasef, Taha", priority:"High", status:"Completed", progress:100},
+            {ref:"2",  task:"Social Media Ops (Instagram)", owner:"Nasef, Support", priority:"High", status:"Waiting", progress:80},
+            {ref:"14", task:"Replace Visa payments with new card", owner:"Hamid, Sabri", priority:"Medium", status:"Waiting", progress:40},
+            {ref:"42", task:"WhatsApp verification — 10 gc + 5 elite", owner:"Reda, Raafat", priority:"High", status:"In Progress", progress:30},
+            {ref:"47", task:"Offboarding — W. Alghazwani", owner:"Taha, Raafat", priority:"High", status:"Completed", progress:100},
+            {ref:"63", task:"Deploy new Contabo staging VPS", owner:"Sabri, Hamid", priority:"High", status:"In Progress", progress:75},
+            {ref:"T1", task:"Update Campaign Dashboard", owner:"Nasef", priority:"High", status:"Completed", progress:100},
+            {ref:"T4", task:"Immutable backup — TrueNAS → Debian", owner:"Taha", priority:"Medium", status:"Completed", progress:100},
+            {ref:"T5", task:"Migrate Main Login to database", owner:"Nasef", priority:"Medium", status:"In Progress", progress:90},
+            {ref:"R4", task:"KW asset inventory review", owner:"Nasef", priority:"High", status:"In Progress", progress:20},
+            {ref:"R6", task:"UAE asset inventory review", owner:"Team", priority:"High", status:"On Hold", progress:0}
+        ];
+
+        // Render Table
+        function renderTable() {
+            const tbody = document.getElementById('taskBody');
+            const pFilter = document.getElementById('filterPriority').value;
+            const sFilter = document.getElementById('filterStatus').value;
+
+            tbody.innerHTML = '';
+
+            const filtered = tasks.filter(t =>
+                (pFilter === 'all' || t.priority === pFilter) &&
+                (sFilter === 'all' || t.status === sFilter)
+            );
+
+            if(filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">No tasks match filters.</td></tr>';
+                return;
+            }
+
+            filtered.forEach(t => {
+                let pBadge = t.priority === 'High' ? 'badge-high' : t.priority === 'Medium' ? 'badge-med' : 'badge-low';
+                let sBadge = t.status === 'Completed' ? 'badge-done' : t.status === 'In Progress' ? 'badge-prog' : t.status === 'Waiting' ? 'badge-wait' : 'badge-low';
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td style="font-family:var(--font-mono); color:var(--text-muted);">${t.ref}</td>
+                        <td style="font-weight:500;">${t.task}</td>
+                        <td>${t.owner}</td>
+                        <td><span class="badge ${pBadge}">${t.priority}</span></td>
+                        <td><span class="badge ${sBadge}">${t.status}</span></td>
+                        <td>
+                            <div style="display:flex; align-items:center; gap:0.5rem;">
+                                <div style="flex:1; height:6px; background:var(--border); border-radius:3px; overflow:hidden;">
+                                    <div style="width:${t.progress}%; height:100%; background:var(--primary);"></div>
+                                </div>
+                                <span style="font-size:0.75rem; font-family:var(--font-mono);">${t.progress}%</span>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Filters Event Listeners
+        document.getElementById('filterPriority').addEventListener('change', renderTable);
+        document.getElementById('filterStatus').addEventListener('change', renderTable);
+        renderTable();
+
+        // Theme Toggle
+        const themeBtn = document.getElementById('themeToggle');
+        themeBtn.addEventListener('click', () => {
+            const root = document.documentElement;
+            if (root.getAttribute('data-theme') === 'dark') {
+                root.removeAttribute('data-theme');
+            } else {
+                root.setAttribute('data-theme', 'dark');
+            }
+        });
+
+        // Scrollspy for Sidebar
+        const sections = document.querySelectorAll('.section-block');
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(sec => {
+                const secTop = sec.offsetTop;
+                if (scrollY >= secTop - 100) {
+                    current = sec.getAttribute('id');
+                }
+            });
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').includes(current)) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+        // Global Search with Highlighting & Accordion Auto-Open
+        const searchInput = document.getElementById('searchInput');
+        const searchableAreas = document.querySelectorAll('.section-block');
+
+        function clearHighlights() {
+            document.querySelectorAll('mark').forEach(mark => {
+                const parent = mark.parentNode;
+                parent.replaceChild(document.createTextNode(mark.textContent), mark);
+                parent.normalize();
+            });
+        }
+
+        searchInput.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase().trim();
+            clearHighlights();
+
+            if (term.length < 2) return;
+
+            searchableAreas.forEach(area => {
+                const walker = document.createTreeWalker(area, NodeFilter.SHOW_TEXT, null);
+                let node;
+                const nodesToWrap = [];
+
+                while (node = walker.nextNode()) {
+                    if (node.nodeValue.toLowerCase().includes(term) && node.parentNode.nodeName !== 'SCRIPT' && node.parentNode.nodeName !== 'MARK') {
+                        nodesToWrap.push(node);
+                    }
+                }
+
+                nodesToWrap.forEach(node => {
+                    // Open parent details if match is inside
+                    const parentDetails = node.parentElement.closest('details');
+                    if(parentDetails) parentDetails.setAttribute('open', '');
+
+                    const regex = new RegExp(`(${term})`, 'gi');
+                    const span = document.createElement('span');
+                    span.innerHTML = node.nodeValue.replace(regex, '<mark>$1</mark>');
+                    while(span.firstChild) {
+                        node.parentNode.insertBefore(span.firstChild, node);
+                    }
+                    node.parentNode.removeChild(node);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

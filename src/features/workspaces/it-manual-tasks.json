@@ -1,0 +1,90 @@
+[
+  {
+    "ref": "1",
+    "task": "Employee Onboarding (Saudi Arabia)",
+    "owner": "Nasef, Taha",
+    "priority": "High",
+    "status": "Completed",
+    "progress": 100
+  },
+  {
+    "ref": "2",
+    "task": "Social Media Ops (Instagram)",
+    "owner": "Nasef, Support",
+    "priority": "High",
+    "status": "Waiting",
+    "progress": 80
+  },
+  {
+    "ref": "14",
+    "task": "Replace Visa payments with new card",
+    "owner": "Hamid, Sabri",
+    "priority": "Medium",
+    "status": "Waiting",
+    "progress": 40
+  },
+  {
+    "ref": "42",
+    "task": "WhatsApp verification — 10 gc + 5 elite",
+    "owner": "Reda, Raafat",
+    "priority": "High",
+    "status": "In Progress",
+    "progress": 30
+  },
+  {
+    "ref": "47",
+    "task": "Offboarding — W. Alghazwani",
+    "owner": "Taha, Raafat",
+    "priority": "High",
+    "status": "Completed",
+    "progress": 100
+  },
+  {
+    "ref": "63",
+    "task": "Deploy new Contabo staging VPS",
+    "owner": "Sabri, Hamid",
+    "priority": "High",
+    "status": "In Progress",
+    "progress": 75
+  },
+  {
+    "ref": "T1",
+    "task": "Update Campaign Dashboard",
+    "owner": "Nasef",
+    "priority": "High",
+    "status": "Completed",
+    "progress": 100
+  },
+  {
+    "ref": "T4",
+    "task": "Immutable backup — TrueNAS → Debian",
+    "owner": "Taha",
+    "priority": "Medium",
+    "status": "Completed",
+    "progress": 100
+  },
+  {
+    "ref": "T5",
+    "task": "Migrate Main Login to database",
+    "owner": "Nasef",
+    "priority": "Medium",
+    "status": "In Progress",
+    "progress": 90
+  },
+  {
+    "ref": "R4",
+    "task": "KW asset inventory review",
+    "owner": "Nasef",
+    "priority": "High",
+    "status": "In Progress",
+    "progress": 20
+  },
+  {
+    "ref": "R6",
+    "task": "UAE asset inventory review",
+    "owner": "Team",
+    "priority": "High",
+    "status": "On Hold",
+    "progress": 0
+  }
+]

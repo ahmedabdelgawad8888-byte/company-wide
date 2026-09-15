@@ -1,3 +1,5 @@
+import { reconcilePeople } from "./it-directory";
+import { isHRDemoUser, validateUser, validateRemoval } from "./user-management";
 import {
   createContext,
   useCallback,
@@ -60,6 +62,7 @@ import type {
 export type Scope = "group" | string;
 
 interface DB {
+  itDirectoryVersion?: number;
   entities: Entity[];
   users: User[];
   roles: RoleDef[];
@@ -102,7 +105,8 @@ interface DB {
 
 const initialDb: DB = {
   entities: seed.entities,
-  users: seed.users.filter((u) => u.workspaceId !== "pmo"),
+  itDirectoryVersion: 1,
+  users: reconcilePeople(seed.users.filter((u) => u.workspaceId !== "pmo")),
   roles: seed.roles,
   clients: seed.clients,
   contacts: seed.contacts,
@@ -111,7 +115,7 @@ const initialDb: DB = {
   campaigns: seed.campaigns,
   influencers: seed.influencers,
   campaignInfluencers: seed.campaignInfluencers,
-  tasks: seed.tasks,
+  tasks: seed.tasks.filter((t) => t.department !== "HR"),
   queueItems: seed.queueItems,
   accounts: seed.accounts,
   coaRequests: seed.coaRequests,
@@ -125,7 +129,7 @@ const initialDb: DB = {
   integrations: seed.integrations,
   saasSeats: seed.saasSeats,
   automationRules: seed.automationRules,
-  calendarEvents: collab.calendarEvents,
+  calendarEvents: collab.calendarEvents.filter((e) => e.organizerId !== "hr-lead"),
   reminderSchedules: collab.reminderSchedules,
   mail: collab.mailMessages,
   chatChannels: collab.chatChannels,
@@ -197,6 +201,8 @@ interface Ctx {
     addFile: (f: Omit<CorporateFile, "id">) => void;
     addEntity: (e: Omit<Entity, "id">) => void;
     addUser: (u: Omit<User, "id" | "lastLogin">) => void;
+    updateUser: (id: string, u: Omit<User, "id" | "lastLogin">) => void;
+    removeUser: (id: string) => void;
     setUserStatus: (id: string, status: User["status"]) => void;
     toggleAutomation: (id: string) => void;
     setSeatStatus: (id: string, status: SaasSeat["status"]) => void;
@@ -267,8 +273,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setDb((prev) => ({
           ...prev,
           ...saved,
-          users: (saved.users ?? prev.users).filter(
-            (u) => u.workspaceId !== "pmo" || !seed.users.some((s) => s.id === u.id),
+          tasks: (saved.tasks ?? prev.tasks).filter(
+            (t) =>
+              !seed.tasks.some(
+                (sample) =>
+                  sample.department === "HR" && JSON.stringify(sample) === JSON.stringify(t),
+              ),
+          ),
+          calendarEvents: (saved.calendarEvents ?? prev.calendarEvents).filter(
+            (e) =>
+              !collab.calendarEvents.some(
+                (sample) =>
+                  sample.organizerId === "hr-lead" && JSON.stringify(sample) === JSON.stringify(e),
+              ),
+          ),
+          itDirectoryVersion: 1,
+          users: reconcilePeople(
+            (saved.users ?? prev.users).filter(
+              (u) =>
+                !isHRDemoUser(u) &&
+                (u.workspaceId !== "pmo" || !seed.users.some((s) => s.id === u.id)),
+            ),
+            saved.itDirectoryVersion === 1,
           ),
           pmoRequirements: pmo.pmoRequirements,
           pmoE2EStages: pmo.pmoE2EStages,
@@ -435,7 +461,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (r === "Group Admin") return true;
       if (perm === "coa.write") return r === "Group Finance";
       if (perm === "finance.approve") return r === "Group Finance" || r === "Executive Management";
-      if (perm === "admin") return r === "IT Admin";
+      if (perm === "admin") return r === "IT Admin" && currentUser.workspaceLevel === "lead";
       if (perm === "assign")
         return [
           "Operations Manager",
@@ -1152,10 +1178,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
               },
             ),
           ),
-        addUser: (u) =>
+        addUser: (input) => {
+          const u = validateUser(db.users, currentUser, input);
           setDb((prev) =>
             pushActivity(
-              { ...prev, users: [...prev.users, { ...u, id: uid("u"), lastLogin: "—" }] },
+              {
+                ...prev,
+                users: [...prev.users, { ...u, id: crypto.randomUUID(), lastLogin: "—" }],
+              },
               {
                 action: "Created user",
                 module: "Admin",
@@ -1164,24 +1194,60 @@ export function AppProvider({ children }: { children: ReactNode }) {
                 entityId: u.entityId,
               },
             ),
-          ),
-        setUserStatus: (id, status) =>
-          setDb((prev) => {
-            const u = prev.users.find((x) => x.id === id);
-            if (!u) return prev;
-            return pushActivity(
-              { ...prev, users: prev.users.map((x) => (x.id === id ? { ...x, status } : x)) },
+          );
+        },
+        updateUser: (id, input) => {
+          const u = validateUser(db.users, currentUser, input, id);
+          setDb((prev) =>
+            pushActivity(
+              { ...prev, users: prev.users.map((x) => (x.id === id ? { ...x, ...u } : x)) },
               {
-                action: "Changed user status",
+                action: "Updated user",
                 module: "Admin",
                 recordId: id,
                 recordLabel: u.name,
                 entityId: u.entityId,
-                from: u.status,
-                to: status,
               },
-            );
-          }),
+            ),
+          );
+        },
+        removeUser: (id) => {
+          const u = validateRemoval(db.users, currentUser, id);
+          setDb((prev) =>
+            pushActivity(
+              {
+                ...prev,
+                users: prev.users
+                  .filter((x) => x.id !== id)
+                  .map((x) => (x.managerId === id ? { ...x, managerId: "" } : x)),
+              },
+              {
+                action: "Removed user",
+                module: "Admin",
+                recordId: id,
+                recordLabel: u.name,
+                entityId: u.entityId,
+              },
+            ),
+          );
+        },
+        setUserStatus: (id, status) => {
+          const existing = db.users.find((u) => u.id === id);
+          if (!existing) throw new Error("User not found.");
+          const user = validateUser(db.users, currentUser, { ...existing, status }, id);
+          setDb((prev) =>
+            pushActivity(
+              { ...prev, users: prev.users.map((x) => (x.id === id ? { ...x, ...user } : x)) },
+              {
+                action: "Changed user status",
+                module: "Admin",
+                recordId: id,
+                recordLabel: user.name,
+                entityId: user.entityId,
+              },
+            ),
+          );
+        },
         toggleAutomation: (id) =>
           setDb((prev) => ({
             ...prev,
