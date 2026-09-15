@@ -8,6 +8,7 @@ import type { User } from "../../lib/types";
 import type { WorkspaceId } from "../../lib/workspace-hub";
 import { WORKSPACES } from "../../lib/workspace-hub";
 import {
+  canManageAllUsers,
   canManageUser,
   validateRemoval,
   validateUser,
@@ -24,9 +25,11 @@ import {
 } from "../../components/ui/dialog";
 import { control } from "./record-form";
 export function UserDirectory({ workspaceId }: { workspaceId?: WorkspaceId }) {
-  const { db, currentUser, actions, entityName } = useApp();
+  const { db, currentUser, actions, entityName, activeWorkspace } = useApp();
   const { state, transact } = useHub();
   const [query, setQuery] = useState("");
+  const [workspaceFilter, setWorkspaceFilter] = useState<WorkspaceId | "">("");
+  const [statusFilter, setStatusFilter] = useState("");
   const [editing, setEditing] = useState<{ id?: string; value: UserInput } | null>(null);
   const [removing, setRemoving] = useState<User | null>(null);
   const [replacement, setReplacement] = useState("");
@@ -34,29 +37,54 @@ export function UserDirectory({ workspaceId }: { workspaceId?: WorkspaceId }) {
   const people = db.users.filter(
     (u) =>
       (!workspaceId || u.workspaceId === workspaceId) &&
+      (!workspaceFilter || u.workspaceId === workspaceFilter) &&
+      (!statusFilter || u.status === statusFilter) &&
       `${u.name} ${u.email} ${u.role} ${u.jobTitle ?? ""}`
         .toLowerCase()
         .includes(query.toLowerCase()),
   );
+  const defaults: Record<WorkspaceId, Pick<UserInput, "role" | "department" | "workspaceLevel">> = {
+    management: { role: "Viewer", department: "Management", workspaceLevel: "member" },
+    sales: { role: "Account Manager", department: "Sales", workspaceLevel: "member" },
+    finance: { role: "Branch Accountant", department: "Finance", workspaceLevel: "member" },
+    hr: { role: "HR Specialist", department: "HR", workspaceLevel: "member" },
+    it: { role: "IT Admin", department: "IT", workspaceLevel: "member" },
+    pmo: {
+      role: "Business Analyst",
+      department: "Dev & Business Analysis",
+      workspaceLevel: "member",
+    },
+  };
   const create = () => {
+    const destination = workspaceId || workspaceFilter || activeWorkspace;
     setError("");
     setEditing({
       value: {
         name: "",
         email: "",
-        role: workspaceId === "it" ? "IT Admin" : "HR Specialist",
-        department: workspaceId === "it" ? "IT" : "HR",
+        ...defaults[destination],
         entityId: currentUser.entityId,
         scope: "group",
         status: "active",
-        workspaceId: workspaceId ?? "hr",
-        workspaceLevel: "member",
+        workspaceId: destination,
         managerId: "",
       },
     });
   };
   const patch = (key: keyof UserInput, value: string) => {
-    if (editing) setEditing({ ...editing, value: { ...editing.value, [key]: value } });
+    if (editing)
+      setEditing({
+        ...editing,
+        value:
+          key === "workspaceId"
+            ? {
+                ...editing.value,
+                ...defaults[value as WorkspaceId],
+                workspaceId: value as WorkspaceId,
+                managerId: "",
+              }
+            : { ...editing.value, [key]: value },
+      });
   };
   function save(e: FormEvent) {
     e.preventDefault();
@@ -141,6 +169,12 @@ export function UserDirectory({ workspaceId }: { workspaceId?: WorkspaceId }) {
         role,
       }),
     );
+  if (!workspaceId && !canManageAllUsers(currentUser))
+    return (
+      <div role="alert">
+        Administrator access is required to manage users across all workspaces.
+      </div>
+    );
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -151,11 +185,44 @@ export function UserDirectory({ workspaceId }: { workspaceId?: WorkspaceId }) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
+        {!workspaceId && (
+          <select
+            aria-label="Filter users by workspace"
+            className={control + " !w-auto max-w-full"}
+            value={workspaceFilter}
+            onChange={(e) => setWorkspaceFilter(e.target.value as WorkspaceId | "")}
+          >
+            <option value="">All workspaces</option>
+            {WORKSPACES.map((w) => (
+              <option key={w.id} value={w.id}>
+                {w.title}
+              </option>
+            ))}
+          </select>
+        )}
+        <select
+          aria-label="Filter users by status"
+          className={control + " !w-auto max-w-full"}
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+        >
+          <option value="">All statuses</option>
+          {["active", "suspended", "offboarding"].map((v) => (
+            <option key={v}>{v}</option>
+          ))}
+        </select>
         {canManageUser(currentUser) && <Button onClick={create}>Add user</Button>}
       </div>
+      <p className="text-sm text-muted-foreground">
+        {people.length} users{!workspaceId && " across selected workspaces"}
+      </p>
       {people.length === 0 && (
         <div className="rounded-xl border border-dashed p-8 text-center">
-          <h2 className="font-semibold">No users added yet</h2>
+          <h2 className="font-semibold">
+            {query || workspaceFilter || statusFilter
+              ? "No users match these filters"
+              : "No users added yet"}
+          </h2>
           <p className="mt-2 text-sm text-muted-foreground">
             Add your team members to assign tasks and manage their workspace.
           </p>
@@ -167,6 +234,8 @@ export function UserDirectory({ workspaceId }: { workspaceId?: WorkspaceId }) {
             <h2 className="font-semibold">{u.name}</h2>
             <p className="text-sm text-muted-foreground">
               {u.jobTitle || u.role} · {u.workspaceLevel} · {u.status}
+              {!workspaceId &&
+                ` · ${WORKSPACES.find((w) => w.id === u.workspaceId)?.title ?? u.workspaceId}`}
             </p>
             <p className="mt-2 text-sm">{u.email || "Email not provided"}</p>
             <p className="text-sm">{entityName(u.entityId)}</p>
@@ -253,6 +322,7 @@ export function UserDirectory({ workspaceId }: { workspaceId?: WorkspaceId }) {
                   Workspace
                   <select
                     className={control}
+                    aria-label="Workspace"
                     value={editing.value.workspaceId}
                     onChange={(e) => patch("workspaceId", e.target.value)}
                   >
@@ -268,6 +338,7 @@ export function UserDirectory({ workspaceId }: { workspaceId?: WorkspaceId }) {
                 Role
                 <select
                   className={control}
+                  aria-label="Role"
                   value={editing.value.role}
                   onChange={(e) => patch("role", e.target.value)}
                 >
@@ -280,6 +351,7 @@ export function UserDirectory({ workspaceId }: { workspaceId?: WorkspaceId }) {
                 Team level
                 <select
                   className={control}
+                  aria-label="Team level"
                   value={editing.value.workspaceLevel}
                   onChange={(e) => patch("workspaceLevel", e.target.value)}
                 >
@@ -300,6 +372,7 @@ export function UserDirectory({ workspaceId }: { workspaceId?: WorkspaceId }) {
                 Entity
                 <select
                   className={control}
+                  aria-label="Entity"
                   value={editing.value.entityId}
                   onChange={(e) => patch("entityId", e.target.value)}
                 >
@@ -311,9 +384,22 @@ export function UserDirectory({ workspaceId }: { workspaceId?: WorkspaceId }) {
                 </select>
               </label>
               <label>
+                Data scope
+                <select
+                  className={control}
+                  aria-label="Data scope"
+                  value={editing.value.scope}
+                  onChange={(e) => patch("scope", e.target.value)}
+                >
+                  <option value="group">All entities within role permissions</option>
+                  <option value="entity">Assigned entity only</option>
+                </select>
+              </label>
+              <label>
                 Reports to
                 <select
                   className={control}
+                  aria-label="Reports to"
                   value={editing.value.managerId ?? ""}
                   onChange={(e) => patch("managerId", e.target.value)}
                 >
@@ -336,6 +422,7 @@ export function UserDirectory({ workspaceId }: { workspaceId?: WorkspaceId }) {
                 Status
                 <select
                   className={control}
+                  aria-label="Status"
                   value={editing.value.status}
                   onChange={(e) => patch("status", e.target.value)}
                 >

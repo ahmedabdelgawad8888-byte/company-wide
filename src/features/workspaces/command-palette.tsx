@@ -1,3 +1,4 @@
+import { canManageAllUsers } from "../../lib/user-management";
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import {
@@ -28,7 +29,7 @@ export function CommandPalette({
   allowedQuickCreate: Kind[];
   role: string;
 }) {
-  const { activeWorkspace, setActiveWorkspace } = useApp();
+  const { activeWorkspace, setActiveWorkspace, currentUser } = useApp();
   const { actor, users } = useHub();
   const records = useRecords().filter((r) => r.workspaceId === activeWorkspace);
   const { t } = useLang();
@@ -110,6 +111,17 @@ export function CommandPalette({
           ))}
         </CommandGroup>
         <CommandGroup heading={t("Navigate", "انتقال")}>
+          {canManageAllUsers(currentUser) && (
+            <CommandItem
+              value="master settings users access create edit remove users المستخدمون الصلاحيات"
+              onSelect={() => {
+                onOpenChange(false);
+                void navigate({ to: "/settings", search: { section: "users" } });
+              }}
+            >
+              {t("Master Settings · Users & Access", "الإعدادات العامة · المستخدمون والصلاحيات")}
+            </CommandItem>
+          )}
           {hubNav(activeWorkspace)
             .flatMap((g) => g.items)
             .filter((i) => !i.to.endsWith("/management") || executive(actor))

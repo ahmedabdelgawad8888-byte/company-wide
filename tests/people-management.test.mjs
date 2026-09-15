@@ -1,6 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { validateUser, validateRemoval, canManageUser } from "../src/lib/user-management.ts";
+import {
+  validateUser,
+  validateRemoval,
+  canManageUser,
+  canManageAllUsers,
+} from "../src/lib/user-management.ts";
 import { reconcilePeople, IT_PEOPLE } from "../src/lib/it-directory.ts";
 import { emptyState } from "../src/features/workspaces/service.ts";
 import { ensureHRWorkspace } from "../src/features/workspaces/hr-workspace.ts";
@@ -74,4 +79,12 @@ test("IT source tasks and backup ownership follow manual and preserve edits on r
   task.ownerId = "it-nasef";
   reconcileOperationalPeople(s, users);
   assert.equal(task.ownerId, "it-nasef");
+});
+
+test("master user settings require an active global administrator", () => {
+  assert.equal(canManageAllUsers(admin), true);
+  assert.equal(canManageAllUsers({ ...admin, role: "Executive Management" }), true);
+  for (const role of ["HR Manager", "HR Specialist", "IT Admin", "Viewer"])
+    assert.equal(canManageAllUsers({ ...admin, role }), false);
+  assert.equal(canManageAllUsers({ ...admin, status: "suspended" }), false);
 });

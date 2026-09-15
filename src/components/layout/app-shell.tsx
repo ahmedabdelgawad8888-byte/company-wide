@@ -1,3 +1,4 @@
+import { canManageAllUsers } from "@/lib/user-management";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
@@ -16,6 +17,7 @@ import {
   Plus,
   Search,
   Settings2,
+  Users,
   Sun,
 } from "lucide-react";
 import { TrygcLogo } from "@/components/brand";
@@ -363,6 +365,21 @@ export function AppShell({ children }: { children: ReactNode }) {
           <NavLinks collapsed={collapsed} />
         </ScrollArea>
         <div className="border-t p-2">
+          {canManageAllUsers(currentUser) && (
+            <Button variant="ghost" size="sm" className="mb-1 w-full justify-center" asChild>
+              <Link
+                to="/settings"
+                search={{ section: "users" }}
+                title={t("Users & Access", "المستخدمون والصلاحيات")}
+              >
+                <Users className="size-4" />
+                {!collapsed && (
+                  <span className="ms-1">{t("Users & Access", "المستخدمون والصلاحيات")}</span>
+                )}
+              </Link>
+            </Button>
+          )}
+
           <Button variant="ghost" size="sm" className="mb-1 w-full justify-center" asChild>
             <Link to="/settings" title={collapsed ? t("Settings", "الإعدادات") : undefined}>
               <Settings2 className="size-4" />
@@ -404,6 +421,26 @@ export function AppShell({ children }: { children: ReactNode }) {
               </div>
               <ScrollArea className="h-[calc(100vh-8rem)] py-3">
                 <NavLinks onNavigate={() => setMobileOpen(false)} />
+                <div className="space-y-1 border-t p-2">
+                  <Button variant="ghost" className="w-full justify-start" asChild>
+                    <Link to="/settings" onClick={() => setMobileOpen(false)}>
+                      <Settings2 className="size-4" />
+                      {t("Settings", "الإعدادات")}
+                    </Link>
+                  </Button>
+                  {canManageAllUsers(currentUser) && (
+                    <Button variant="ghost" className="w-full justify-start" asChild>
+                      <Link
+                        to="/settings"
+                        search={{ section: "users" }}
+                        onClick={() => setMobileOpen(false)}
+                      >
+                        <Users className="size-4" />
+                        {t("Users & Access", "المستخدمون والصلاحيات")}
+                      </Link>
+                    </Button>
+                  )}
+                </div>
               </ScrollArea>
             </SheetContent>
           </Sheet>

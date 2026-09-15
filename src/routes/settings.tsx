@@ -1,5 +1,7 @@
-import { useRef, useState, type ReactNode } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { UserDirectory } from "@/features/workspaces/user-directory";
+import { canManageAllUsers } from "@/lib/user-management";
+import { useRef, type ReactNode } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import {
   Building2,
@@ -14,6 +16,7 @@ import {
   Bot,
   Download,
   Upload,
+  Users,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -101,6 +104,7 @@ function Picker<T extends string>({
 }
 
 const SECTIONS = [
+  { key: "users", en: "Users & Access", ar: "المستخدمون والصلاحيات", icon: Users },
   { key: "organisation", en: "Organisation", ar: "المؤسسة", icon: Building2 },
   { key: "localisation", en: "Language & region", ar: "اللغة والمنطقة", icon: Globe },
   { key: "appearance", en: "Appearance", ar: "المظهر", icon: Palette },
@@ -192,11 +196,15 @@ function WorkspaceDataPanel() {
 }
 
 function SettingsPage() {
-  const { db, actions, can } = useApp();
+  const { db, actions, can, currentUser } = useApp();
   const { t, lang, setLang } = useLang();
   const { theme, setTheme } = useTheme();
   const s = db.settings;
-  const [tab, setTab] = useState<SectionKey>("organisation");
+  const { section } = Route.useSearch();
+  const tab = section ?? "organisation";
+  const navigate = useNavigate({ from: "/settings" });
+  const masterAdmin = canManageAllUsers(currentUser);
+  const setTab = (next: SectionKey) => void navigate({ search: { section: next }, replace: true });
 
   const save = <K extends keyof AppSettings>(section: K, patch: Partial<AppSettings[K]>) =>
     actions.updateSettings(section, patch);
@@ -211,7 +219,7 @@ function SettingsPage() {
       <PageHeader
         title={t("Settings", "الإعدادات")}
         subtitle={t(
-          "Organisation profile, regional formats, appearance, notifications, finance rules, approvals, security and export defaults.",
+          "Manage users across all workspaces, organisation preferences and tool settings.",
           "ملف المؤسسة والتنسيقات الإقليمية والمظهر والإشعارات وقواعد المالية والموافقات والأمان وإعدادات التصدير.",
         )}
         actions={
@@ -229,7 +237,7 @@ function SettingsPage() {
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as SectionKey)}>
         <TabsList className="flex-wrap">
-          {SECTIONS.map((sec) => (
+          {SECTIONS.filter((sec) => sec.key !== "users" || masterAdmin).map((sec) => (
             <TabsTrigger key={sec.key} value={sec.key} className="gap-1.5">
               <sec.icon className="size-3.5" /> {t(sec.en, sec.ar)}
             </TabsTrigger>
@@ -237,7 +245,28 @@ function SettingsPage() {
         </TabsList>
       </Tabs>
 
-      {tab === "organisation" ? (
+      {tab === "users" ? (
+        masterAdmin ? (
+          <Panel>
+            <Section
+              title={t("Master user management", "إدارة المستخدمين العامة")}
+              description={t(
+                "Create, edit and remove users across every workspace.",
+                "إنشاء المستخدمين وتعديلهم وحذفهم في جميع المساحات.",
+              )}
+            >
+              <UserDirectory />
+            </Section>
+          </Panel>
+        ) : (
+          <div role="alert" className="rounded-xl border p-6">
+            {t(
+              "Administrator access is required to manage users across all workspaces.",
+              "يلزم صلاحية الإدارة لإدارة المستخدمين عبر جميع المساحات.",
+            )}
+          </div>
+        )
+      ) : tab === "organisation" ? (
         <Panel>
           <Section
             title={t("Organisation", "المؤسسة")}
@@ -874,4 +903,10 @@ function SettingsPage() {
   );
 }
 
-export const Route = createFileRoute("/settings")({ component: SettingsPage });
+export const Route = createFileRoute("/settings")({
+  validateSearch: (search: Record<string, unknown>): { section?: SectionKey } =>
+    SECTIONS.some((s) => s.key === search["section"])
+      ? { section: search["section"] as SectionKey }
+      : {},
+  component: SettingsPage,
+});

@@ -6,9 +6,11 @@ export const HR_DEMO_USERS = [
 ];
 export const isHRDemoUser = (u: Pick<User, "id" | "name" | "email">) =>
   HR_DEMO_USERS.some((d) => d.id === u.id && d.name === u.name && d.email === u.email);
+export const canManageAllUsers = (actor: Pick<User, "role" | "status">) =>
+  actor.status === "active" && ["Group Admin", "Executive Management"].includes(actor.role);
 export function canManageUser(actor: User, target?: Pick<User, "workspaceId" | "role">) {
   if (actor.status !== "active") return false;
-  if (["Group Admin", "Executive Management"].includes(actor.role)) return true;
+  if (canManageAllUsers(actor)) return true;
   if (actor.workspaceId === "it" && actor.workspaceLevel === "lead")
     return !target || (target.workspaceId === "it" && target.role === "IT Admin");
   return (

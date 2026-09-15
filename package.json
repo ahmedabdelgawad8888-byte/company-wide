@@ -21,7 +21,8 @@
     "qa:dashboard": "node scripts/qa-dashboard.mjs",
     "qa": "npm run qa:smoke && npm run qa:workflow && npm run qa:acceptance && npm run qa:dashboard && npm run qa:responsive",
     "qa:responsive": "node scripts/qa-responsive.mjs",
-    "qa:hr": "node scripts/qa-hr.mjs"
+    "qa:hr": "node scripts/qa-hr.mjs",
+    "qa:users": "node scripts/qa-users.mjs"
   },
   "overrides": {
     "rolldown": "1.2.1"
