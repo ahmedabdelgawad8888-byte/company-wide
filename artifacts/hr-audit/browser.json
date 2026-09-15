@@ -1,8 +1,10 @@
 {
   "passed": true,
-  "definitions": 56,
-  "enabledSchedules": 28,
+  "definitions": 168,
+  "enabledSchedules": 84,
   "checks": [
+    "real user add/edit/remove and no resurrection",
+    "eight IT names from manual",
     "category filter",
     "schedule save and audit",
     "request task creation",

@@ -1,3 +1,4 @@
+import { PmoEditor } from "@/features/pmo/editor";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { PageHeader, Panel, Stat, StatusPill } from "@/components/kit";
@@ -38,6 +39,7 @@ function PmoE2EView() {
 
   return (
     <div className="space-y-6">
+      <PmoEditor collection="pmoE2EStages" />
       <PageHeader
         title={t("E2E Journey View", "رحلة المستخدم الشاملة")}
         subtitle={t(

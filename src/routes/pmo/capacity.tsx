@@ -1,3 +1,4 @@
+import { PmoEditor } from "@/features/pmo/editor";
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader, Panel } from "@/components/kit";
 import { useApp } from "@/lib/store";
@@ -77,6 +78,7 @@ function PmoCapacity() {
 
   return (
     <div className="space-y-6">
+      <PmoEditor />
       <PageHeader
         title={t("Capacity & Workload", "القدرة وتوزيع العمل")}
         subtitle={t(`${totalEffort} person-days total effort`, `${totalEffort} يوم عمل إجمالي`)}

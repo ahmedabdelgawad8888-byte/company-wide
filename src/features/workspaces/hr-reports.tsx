@@ -1,3 +1,4 @@
+import { HR_COUNTRIES } from "../../lib/hr-directory";
 import { useState } from "react";
 import { guide } from "./hr-workspace";
 import { closed, overdue, today, type WorkRecord } from "./model";
@@ -6,18 +7,41 @@ import { Input } from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
 export function HRReports({ rows, onOpen }: { rows: WorkRecord[]; onOpen: (id: string) => void }) {
   const { state } = useHub();
+  const [country, setCountry] = useState("");
   const [from, setFrom] = useState(today().slice(0, 8) + "01");
   const [to, setTo] = useState(
     today().slice(0, 8) +
       String(new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate()),
   );
-  const tasks = rows.filter((r) => r.kind === "hr-task" && r.dueDate >= from && r.dueDate <= to);
+  const tasks = rows.filter(
+    (r) =>
+      r.kind === "hr-task" &&
+      (!country || r.entityId === country) &&
+      r.dueDate >= from &&
+      r.dueDate <= to,
+  );
   const evidence = (r: WorkRecord) =>
     !!r.details["evidenceLink"] || state.attachments.some((a) => a.recordId === r.id);
   const categories = [...new Set(guide.tasks.map((t) => t.category))];
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap gap-3">
+        <label className="grid gap-1 text-sm">
+          Country
+          <select
+            aria-label="Report country"
+            className="rounded-md border p-2"
+            value={country}
+            onChange={(e) => setCountry(e.target.value)}
+          >
+            <option value="">All countries</option>
+            {HR_COUNTRIES.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </label>
         <label className="grid gap-1 text-sm">
           Due from
           <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />

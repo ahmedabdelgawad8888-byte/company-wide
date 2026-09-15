@@ -1,3 +1,4 @@
+import type { PmoData } from "../../lib/pmo-management.ts";
 import * as baseline from "../../lib/data/pmo-seed.ts";
 import type { Actor, HubState, Kind, WorkRecord } from "./model.ts";
 
@@ -26,7 +27,7 @@ export const pmoOwners: Actor[] = [
     workspaceLevel: "member",
   }));
 
-export function workbookRecords(): WorkRecord[] {
+export function workbookRecords(data: PmoData = baseline): WorkRecord[] {
   const records: WorkRecord[] = [];
   const add = (
     sheet: string,
@@ -67,14 +68,14 @@ export function workbookRecords(): WorkRecord[] {
       nextAction: details["acceptanceCriteria"] ?? details["mitigation"] ?? "",
       details: { ...details, sourceSheet: sheet, sourceKey: key, sourceOwner: owner },
       createdBy: "workbook-import",
-      createdAt: `${baseline.pmoPlanConfig.planStartDate}T00:00:00.000Z`,
-      updatedAt: `${baseline.pmoPlanConfig.planStartDate}T00:00:00.000Z`,
+      createdAt: `${data.pmoPlanConfig.planStartDate}T00:00:00.000Z`,
+      updatedAt: `${data.pmoPlanConfig.planStartDate}T00:00:00.000Z`,
       completedAt: "",
       sourceId: VERSION,
       archived: false,
     });
   };
-  for (const r of baseline.pmoRequirements) {
+  for (const r of data.pmoRequirements) {
     add(
       "Master Register",
       r.id,
@@ -94,19 +95,19 @@ export function workbookRecords(): WorkRecord[] {
       r.percentDone,
     );
   }
-  for (const m of baseline.pmoMilestones)
+  for (const m of data.pmoMilestones)
     add(
       "Milestones",
       m.id,
       "project",
       `[${m.id}] ${m.name}`,
       m.owner,
-      baseline.pmoPlanConfig.planStartDate,
+      data.pmoPlanConfig.planStartDate,
       m.forecastDate!,
       m.status === "Not Started" ? "Planned" : m.status,
       { ...m, milestones: m.gateCriteria },
     );
-  for (const a of baseline.pmoActions)
+  for (const a of data.pmoActions)
     add(
       "Actions Log",
       a.id,
@@ -118,7 +119,7 @@ export function workbookRecords(): WorkRecord[] {
       a.status === "Open" ? "To Do" : a.status === "Closed" ? "Done" : a.status,
       a,
     );
-  for (const q of baseline.pmoQuestions)
+  for (const q of data.pmoQuestions)
     add(
       "Open Questions",
       q.id,
@@ -130,7 +131,7 @@ export function workbookRecords(): WorkRecord[] {
       q.status === "Deferred" ? "Deferred" : "Needed",
       q,
     );
-  for (const r of baseline.pmoRaidItems)
+  for (const r of data.pmoRaidItems)
     add(
       "RAID Log",
       r.id,

@@ -1,3 +1,4 @@
+import { PmoEditor } from "@/features/pmo/editor";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageHeader, Panel, StatusPill } from "@/components/kit";
@@ -83,6 +84,7 @@ function PmoRaid() {
 
   return (
     <div className="space-y-6">
+      <PmoEditor collection="pmoRaidItems" />
       <PageHeader
         title={t("RAID Log", "سجل المخاطر والافتراضات")}
         subtitle={t(`${pmoRaidItems.length} items tracked`, `${pmoRaidItems.length} عنصر متتبع`)}

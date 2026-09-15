@@ -1,3 +1,4 @@
+import { PmoEditor } from "@/features/pmo/editor";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageHeader, Panel, StatusPill } from "@/components/kit";
@@ -42,6 +43,7 @@ function PmoQuestions() {
 
   return (
     <div className="space-y-6">
+      <PmoEditor collection="pmoQuestions" />
       <PageHeader
         title={t("Open Questions", "الأسئلة المفتوحة")}
         subtitle={t(

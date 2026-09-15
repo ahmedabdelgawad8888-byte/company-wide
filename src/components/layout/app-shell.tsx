@@ -292,6 +292,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     entityName,
     actions,
     activeWorkspace,
+    setActiveWorkspace,
   } = useApp();
   const { t, lang, toggleLang, dir } = useLang();
   const { dark, toggle } = useTheme();
@@ -306,6 +307,11 @@ export function AppShell({ children }: { children: ReactNode }) {
     ? QUICK_CREATE_BY_WORKSPACE[activeWorkspace]
     : [];
   const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const isPmoPath = pathname === "/pmo" || pathname.startsWith("/pmo/");
+  const canOpenPmo = getWorkspaceIdsForUser(currentUser).includes("pmo");
+  useEffect(() => {
+    if (isPmoPath && canOpenPmo && activeWorkspace !== "pmo") setActiveWorkspace("pmo");
+  }, [isPmoPath, canOpenPmo, activeWorkspace, setActiveWorkspace]);
   const entityLocked = currentUser.scope === "entity";
   const activeWorkspaceDef = getWorkspace(activeWorkspace);
 
@@ -340,6 +346,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     pathname === "/workspace" ||
     pathname.startsWith("/agent") ||
     pathname === "/settings" ||
+    (isPmoPath && canOpenPmo) ||
     pathname.startsWith("/workspaces/") ||
     workspaceAllowsPath(activeWorkspace, pathname);
 

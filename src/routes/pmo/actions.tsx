@@ -1,3 +1,4 @@
+import { PmoEditor } from "@/features/pmo/editor";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageHeader, Panel, StatusPill } from "@/components/kit";
@@ -69,6 +70,7 @@ function PmoActions() {
 
   return (
     <div className="space-y-6">
+      <PmoEditor collection="pmoActions" />
       <PageHeader
         title={t("Actions Log", "سجل الإجراءات")}
         subtitle={t(`${pmoActions.length} actions tracked`, `${pmoActions.length} إجراء متتبع`)}

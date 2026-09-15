@@ -1,3 +1,4 @@
+import { HR_COUNTRIES } from "../../lib/hr-directory";
 import { useState } from "react";
 import { toast } from "sonner";
 import { guide, hrDraft } from "./hr-workspace";
@@ -17,6 +18,9 @@ import { Input } from "../../components/ui/input";
 
 export function HRGuide({ onOpen }: { onOpen: (id: string) => void }) {
   const { state, actor, users, transact } = useHub();
+  const [country, setCountry] = useState(
+    ["ae", "sa", "eg"].includes(actor.entityId) ? actor.entityId : "eg",
+  );
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("");
   const [frequency, setFrequency] = useState("");
@@ -29,7 +33,9 @@ export function HRGuide({ onOpen }: { onOpen: (id: string) => void }) {
       (!frequency || t.frequency === frequency) &&
       JSON.stringify(t).toLowerCase().includes(query.toLowerCase()),
   );
-  const definitions = state.records.filter((r) => r.sourceId === "hr-guide:v1" && !r.archived);
+  const definitions = state.records.filter(
+    (r) => r.sourceId === "hr-guide:v1" && !r.archived && r.entityId === country,
+  );
   function save() {
     if (!editing) return;
     try {
@@ -72,6 +78,23 @@ export function HRGuide({ onOpen }: { onOpen: (id: string) => void }) {
   }
   return (
     <div className="space-y-5">
+      <label className="block text-sm font-medium">
+        Country
+        <select
+          aria-label="HR country"
+          className={control}
+          value={country}
+          onChange={(e) => setCountry(e.target.value)}
+        >
+          {HR_COUNTRIES.filter((c) => actor.scope !== "entity" || c.id === actor.entityId).map(
+            (c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ),
+          )}
+        </select>
+      </label>
       <div className="grid gap-3 sm:grid-cols-3">
         {[
           ["Guide tasks", guide.tasks.length],
@@ -133,7 +156,7 @@ export function HRGuide({ onOpen }: { onOpen: (id: string) => void }) {
       <p className="text-sm text-muted-foreground">{rows.length} tasks</p>
       <div className="space-y-3">
         {rows.map((task) => {
-          const r = definitions.find((r) => r.id === task.id);
+          const r = definitions.find((r) => (r.details["guideId"] ?? r.id) === task.id);
           return (
             <section key={task.id} className="rounded-xl border bg-card p-5">
               <div className="flex flex-wrap justify-between gap-3">
@@ -163,6 +186,12 @@ export function HRGuide({ onOpen }: { onOpen: (id: string) => void }) {
               <p className="mb-3 text-sm">
                 Accountable owner:{" "}
                 {users.find((u) => u.id === r?.ownerId)?.name ?? "Needs assignment"} ·{" "}
+                {r?.collaborators.length
+                  ? `Support: ${r.collaborators
+                      .map((id) => users.find((u) => u.id === id)?.name)
+                      .filter(Boolean)
+                      .join(", ")} · `
+                  : ""}
                 {r?.details["enabled"] === "true"
                   ? `Next: ${r.details["nextExecution"]} (${r.details["selectedCadence"]})`
                   : task.frequency === "As Needed"

@@ -1,3 +1,4 @@
+import { PmoEditor } from "@/features/pmo/editor";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { PageHeader, Panel, Section, Stat, StatusPill, Pill } from "@/components/kit";
@@ -39,6 +40,7 @@ function PmoDashboard() {
 
   return (
     <div className="space-y-6">
+      <PmoEditor />
       <PageHeader
         title={t("Dev & Business Analysis", "التطوير وتحليل الأعمال")}
         subtitle={t(

@@ -28,7 +28,7 @@ try {
     (await stored()).records.filter(
       (r) => r.sourceId === "hr-guide:v1" && r.details.enabled === "true",
     ).length,
-    0,
+    84,
   );
   assert.ok(!(await page.locator("body").innerText()).includes("Hala Nasser"));
   await page.goto(base + "/workspaces/hr/employee", { waitUntil: "networkidle" });
@@ -37,6 +37,7 @@ try {
   await page.getByRole("dialog").getByLabel("Email", { exact: true }).fill("qa-hr@example.test");
   await page.getByRole("dialog").getByRole("button", { name: "Save user", exact: true }).click();
   await page.getByRole("heading", { name: "QA HR Operator", exact: true }).waitFor();
+  await page.getByLabel("Search users", { exact: true }).fill("QA HR Operator");
   await page.getByRole("button", { name: "Edit user", exact: true }).click();
   await page.getByRole("dialog").getByLabel("Job title", { exact: true }).fill("HR operations");
   await page.getByRole("dialog").getByRole("button", { name: "Save user", exact: true }).click();
@@ -47,11 +48,11 @@ try {
     storageKey,
   );
   const initial = await stored();
-  assert.equal(initial.records.filter((r) => r.sourceId === "hr-guide:v1").length, 56);
+  assert.equal(initial.records.filter((r) => r.sourceId === "hr-guide:v1").length, 168);
   assert.equal(
     initial.records.filter((r) => r.sourceId === "hr-guide:v1" && r.details.enabled === "true")
       .length,
-    28,
+    84,
   );
   assert.ok(initial.records.some((r) => r.kind === "hr-task"));
   await page.screenshot({ path: "artifacts/hr-audit/desktop.png" });
@@ -118,6 +119,7 @@ try {
   assert.ok(!(await page.locator("body").innerText()).includes("Bader Al-Qahtani"));
   await page.screenshot({ path: "artifacts/hr-audit/it-team.png" });
   await page.goto(base + "/workspaces/hr/employee", { waitUntil: "networkidle" });
+  await page.getByLabel("Search users", { exact: true }).fill("QA HR Operator");
   await page.getByRole("button", { name: "Remove user", exact: true }).click();
   await page
     .getByRole("dialog")
@@ -138,8 +140,8 @@ try {
   assert.deepEqual(errors, []);
   const report = {
     passed: true,
-    definitions: 56,
-    enabledSchedules: 28,
+    definitions: 168,
+    enabledSchedules: 84,
     checks: [
       "real user add/edit/remove and no resurrection",
       "eight IT names from manual",

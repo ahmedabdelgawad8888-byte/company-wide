@@ -1,3 +1,5 @@
+import { canEditPmo, type PmoData } from "./pmo-management";
+import { reconcileHRPeople } from "./hr-directory";
 import { reconcilePeople } from "./it-directory";
 import { isHRDemoUser, validateUser, validateRemoval } from "./user-management";
 import {
@@ -63,6 +65,8 @@ export type Scope = "group" | string;
 
 interface DB {
   itDirectoryVersion?: number;
+  hrDirectoryVersion?: number;
+  pmoDataVersion?: number;
   entities: Entity[];
   users: User[];
   roles: RoleDef[];
@@ -106,7 +110,8 @@ interface DB {
 const initialDb: DB = {
   entities: seed.entities,
   itDirectoryVersion: 1,
-  users: reconcilePeople(seed.users.filter((u) => u.workspaceId !== "pmo")),
+  hrDirectoryVersion: 1,
+  users: reconcileHRPeople(reconcilePeople(seed.users.filter((u) => u.workspaceId !== "pmo"))),
   roles: seed.roles,
   clients: seed.clients,
   contacts: seed.contacts,
@@ -136,6 +141,7 @@ const initialDb: DB = {
   chatMessages: collab.chatMessages,
   settings: collab.defaultSettings,
   // PMO workspace data
+  pmoDataVersion: 1,
   pmoRequirements: pmo.pmoRequirements,
   pmoE2EStages: pmo.pmoE2EStages,
   pmoMilestones: pmo.pmoMilestones,
@@ -169,6 +175,7 @@ interface Ctx {
   influencerName: (id?: string) => string;
   log: (e: Omit<ActivityEvent, "id" | "at" | "actorId">) => void;
   actions: {
+    updatePmoData: (patch: Partial<PmoData>) => void;
     addDeal: (d: Omit<Deal, "id" | "createdAt" | "lastActivity">) => Deal;
     addSalesActivity: (a: Omit<SalesActivity, "id" | "createdAt">) => SalesActivity;
     moveDeal: (id: string, stage: LeadStage) => void;
@@ -288,21 +295,45 @@ export function AppProvider({ children }: { children: ReactNode }) {
               ),
           ),
           itDirectoryVersion: 1,
-          users: reconcilePeople(
-            (saved.users ?? prev.users).filter(
-              (u) =>
-                !isHRDemoUser(u) &&
-                (u.workspaceId !== "pmo" || !seed.users.some((s) => s.id === u.id)),
+          hrDirectoryVersion: 1,
+          users: reconcileHRPeople(
+            reconcilePeople(
+              (saved.users ?? prev.users).filter(
+                (u) =>
+                  !isHRDemoUser(u) &&
+                  (u.workspaceId !== "pmo" || !seed.users.some((s) => s.id === u.id)),
+              ),
+              saved.itDirectoryVersion === 1,
             ),
-            saved.itDirectoryVersion === 1,
+            saved.hrDirectoryVersion === 1,
           ),
-          pmoRequirements: pmo.pmoRequirements,
-          pmoE2EStages: pmo.pmoE2EStages,
-          pmoMilestones: pmo.pmoMilestones,
-          pmoRaidItems: pmo.pmoRaidItems,
-          pmoActions: pmo.pmoActions,
-          pmoQuestions: pmo.pmoQuestions,
-          pmoPlanConfig: pmo.pmoPlanConfig,
+          pmoDataVersion: 1,
+          pmoRequirements:
+            saved.pmoDataVersion === 1
+              ? (saved.pmoRequirements ?? pmo.pmoRequirements)
+              : pmo.pmoRequirements,
+          pmoE2EStages:
+            saved.pmoDataVersion === 1
+              ? (saved.pmoE2EStages ?? pmo.pmoE2EStages)
+              : pmo.pmoE2EStages,
+          pmoMilestones:
+            saved.pmoDataVersion === 1
+              ? (saved.pmoMilestones ?? pmo.pmoMilestones)
+              : pmo.pmoMilestones,
+          pmoRaidItems:
+            saved.pmoDataVersion === 1
+              ? (saved.pmoRaidItems ?? pmo.pmoRaidItems)
+              : pmo.pmoRaidItems,
+          pmoActions:
+            saved.pmoDataVersion === 1 ? (saved.pmoActions ?? pmo.pmoActions) : pmo.pmoActions,
+          pmoQuestions:
+            saved.pmoDataVersion === 1
+              ? (saved.pmoQuestions ?? pmo.pmoQuestions)
+              : pmo.pmoQuestions,
+          pmoPlanConfig:
+            saved.pmoDataVersion === 1
+              ? (saved.pmoPlanConfig ?? pmo.pmoPlanConfig)
+              : pmo.pmoPlanConfig,
           settings: { ...prev.settings, ...(saved.settings ?? {}) },
         }));
       }
@@ -499,6 +530,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       influencerName,
       log,
       actions: {
+        updatePmoData: (patch) => {
+          if (!canEditPmo(currentUser))
+            throw new Error("You do not have permission to edit this workspace.");
+          setDb((prev) => ({ ...prev, ...patch, pmoDataVersion: 1 }));
+        },
         addDeal: (d) => {
           const deal: Deal = {
             ...d,

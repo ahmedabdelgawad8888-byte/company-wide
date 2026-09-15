@@ -1,3 +1,4 @@
+import { HR_COUNTRIES } from "../../lib/hr-directory.ts";
 import guide from "./hr-guide.json" with { type: "json" };
 import { today, type Actor, type Draft, type HubState, type WorkRecord } from "./model.ts";
 import { access, createRecord, permission } from "./service.ts";
@@ -35,7 +36,7 @@ export function initialHRSchedule(cadence: string, title: string, day: string) {
   }
   return { date: d.toISOString().slice(0, 10), anchor };
 }
-export function ensureHRWorkspace(s: HubState, users: Actor[]) {
+function ensureBaseHRWorkspace(s: HubState, users: Actor[]) {
   const owner =
     users.find((u) => access(u, "hr") && u.role === "HR Specialist") ??
     users.find((u) => access(u, "hr") && u.role === "HR Manager") ??
@@ -129,15 +130,67 @@ export function ensureHRWorkspace(s: HubState, users: Actor[]) {
   }
   return changed;
 }
+export function ensureHRWorkspace(s: HubState, users: Actor[]) {
+  const hasCountryTeam =
+    users.some(
+      (u) =>
+        u.workspaceId === "hr" &&
+        HR_COUNTRIES.some((c) => c.people.some((n) => n.toLowerCase() === u.name.toLowerCase())),
+    ) || s.records.some((r) => r.details["countrySetup"] === "1");
+  if (!hasCountryTeam) return ensureBaseHRWorkspace(s, users);
+  let changed = false;
+  for (const old of s.records.filter(
+    (r) => r.sourceId === "hr-guide:v1" && !r.details["countrySetup"] && !r.archived,
+  )) {
+    old.archived = true;
+    old.details["enabled"] = "false";
+    changed = true;
+  }
+  for (const country of HR_COUNTRIES) {
+    const team = country.people
+      .map((name) =>
+        users.find(
+          (u) =>
+            u.workspaceId === "hr" &&
+            u.entityId === country.id &&
+            u.name.toLowerCase() === name.toLowerCase() &&
+            access(u, "hr"),
+        ),
+      )
+      .filter((u): u is Actor => !!u);
+    const scratch = { ...s, records: [] } as HubState;
+    ensureBaseHRWorkspace(scratch, [
+      ...team,
+      ...users.filter((u) => ["Group Admin", "Executive Management"].includes(u.role)),
+    ]);
+    for (const [index, definition] of scratch.records.entries()) {
+      const id = `${definition.id}:${country.id}`;
+      if (s.records.some((r) => r.id === id)) continue;
+      const owner = team[index % (team.length || 1)];
+      definition.id = id;
+      definition.entityId = country.id;
+      definition.ownerId = owner?.id ?? "unassigned";
+      definition.collaborators = team.filter((u) => u.id !== owner?.id).map((u) => u.id);
+      definition.details["countrySetup"] = "1";
+      definition.details["country"] = country.name;
+      definition.details["enabled"] = String(
+        !!owner && !!definition.details["selectedCadence"] && !!definition.details["approverId"],
+      );
+      s.records.push(definition);
+      changed = true;
+    }
+  }
+  return changed;
+}
 export function hrDraft(r: WorkRecord, day = today()): Draft {
-  const task = guide.tasks.find((t) => t.id === r.id)!;
+  const task = guide.tasks.find((t) => t.id === (r.details["guideId"] ?? r.id))!;
   return {
     workspaceId: "hr",
     kind: "hr-task",
     title: task.task,
     description: `${task.category}\n${guide.source} — HR Task Tracker row ${task.sourceRow}`,
     ownerId: r.ownerId,
-    collaborators: [],
+    collaborators: [...r.collaborators],
     entityId: r.entityId,
     status: "Not Started",
     priority: r.priority,

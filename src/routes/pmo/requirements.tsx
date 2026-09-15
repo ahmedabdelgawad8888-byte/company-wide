@@ -1,3 +1,4 @@
+import { PmoEditor } from "@/features/pmo/editor";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageHeader, Panel, StatusPill } from "@/components/kit";
@@ -69,6 +70,7 @@ function PmoRequirements() {
 
   return (
     <div className="space-y-6">
+      <PmoEditor collection="pmoRequirements" />
       <PageHeader
         title={t("Requirements Register", "سجل المتطلبات")}
         subtitle={t(
@@ -164,7 +166,16 @@ function PmoRequirements() {
                   className="border-b hover:bg-muted/50 cursor-pointer"
                   onClick={() => setSelectedReq(r)}
                 >
-                  <td className="p-3 font-mono text-xs">{r.id}</td>
+                  <td className="p-3 font-mono text-xs">
+                    {r.id}
+                    <div onClick={(e) => e.stopPropagation()} className="mt-2">
+                      <PmoEditor
+                        collection="pmoRequirements"
+                        recordId={r.id}
+                        onSaved={() => setSelectedReq(null)}
+                      />
+                    </div>
+                  </td>
                   <td className="p-3">
                     <Badge variant="outline">{r.module}</Badge>
                   </td>

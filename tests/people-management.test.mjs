@@ -88,3 +88,31 @@ test("master user settings require an active global administrator", () => {
     assert.equal(canManageAllUsers({ ...admin, role }), false);
   assert.equal(canManageAllUsers({ ...admin, status: "suspended" }), false);
 });
+
+test("HR country setup creates 56 definitions per country and persists real staff removal", async () => {
+  const { reconcileHRPeople } = await import("../src/lib/hr-directory.ts");
+  const { hrDraft } = await import("../src/features/workspaces/hr-workspace.ts");
+  const users = reconcileHRPeople([admin]);
+  assert.deepEqual(
+    users.slice(1).map((u) => u.name),
+    ["Menna", "Fatma", "Zakaria", "Aya"],
+  );
+  const s = emptyState();
+  ensureHRWorkspace(s, users);
+  assert.equal(s.records.length, 168);
+  for (const entity of ["ae", "sa", "eg"]) {
+    const definitions = s.records.filter((r) => r.entityId === entity);
+    assert.equal(definitions.length, 56);
+    assert.equal(definitions.filter((r) => r.details.enabled === "true").length, 28);
+    assert.ok(definitions.every((r) => hrDraft(r).entityId === entity));
+  }
+  assert.equal(s.records.filter((r) => r.ownerId === "hr-zakaria").length, 28);
+  assert.equal(s.records.filter((r) => r.ownerId === "hr-aya").length, 28);
+  assert.equal(ensureHRWorkspace(s, users), false);
+  assert.ok(
+    !reconcileHRPeople(
+      users.filter((u) => u.id !== "hr-menna"),
+      true,
+    ).some((u) => u.id === "hr-menna"),
+  );
+});

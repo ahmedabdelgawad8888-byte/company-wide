@@ -1,3 +1,4 @@
+import { PmoEditor } from "@/features/pmo/editor";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { PageHeader, Panel, Stat, StatusPill } from "@/components/kit";
@@ -26,6 +27,7 @@ function PmoMilestones() {
 
   return (
     <div className="space-y-6">
+      <PmoEditor collection="pmoMilestones" />
       <PageHeader
         title={t("Milestones", "المراحل الرئيسية")}
         subtitle={t(

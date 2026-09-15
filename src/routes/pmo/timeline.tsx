@@ -1,3 +1,4 @@
+import { PmoEditor } from "@/features/pmo/editor";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageHeader, Panel } from "@/components/kit";
@@ -50,8 +51,10 @@ function PmoTimeline() {
     waves.map((wave) => [
       wave,
       {
-        start: Math.min(...reqsByWave[wave].map((r) => weekOf(r.startDate!))),
-        end: Math.max(...reqsByWave[wave].map((r) => weekOf(r.etaDate!))),
+        start: Math.min(
+          ...reqsByWave[wave].map((r) => weekOf(r.startDate!)).filter(Number.isFinite),
+        ),
+        end: Math.max(...reqsByWave[wave].map((r) => weekOf(r.etaDate!)).filter(Number.isFinite)),
       },
     ]),
   ) as Record<PmoWave, { start: number; end: number }>;
@@ -70,6 +73,7 @@ function PmoTimeline() {
 
   return (
     <div className="space-y-6">
+      <PmoEditor />
       <PageHeader
         title={t("Project Timeline", "الجدول الزمني للمشروع")}
         subtitle={t(
@@ -166,22 +170,24 @@ function PmoTimeline() {
                 </div>
                 <div className="flex-1 relative h-8 bg-muted/30 rounded">
                   {/* Wave bar */}
-                  <div
-                    className={`absolute top-1 bottom-1 ${waveColors[wave]} rounded opacity-80`}
-                    style={{
-                      left: `${((timeline.start - 1) / totalWeeks) * 100}%`,
-                      width: `${((timeline.end - timeline.start + 1) / totalWeeks) * 100}%`,
-                    }}
-                  >
-                    {/* Progress overlay */}
+                  {Number.isFinite(timeline.start) && Number.isFinite(timeline.end) && (
                     <div
-                      className="absolute inset-y-0 left-0 bg-white/30 rounded-l"
-                      style={{ width: `${progress}%` }}
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center text-white text-xs font-medium">
-                      {progress}%
+                      className={`absolute top-1 bottom-1 ${waveColors[wave]} rounded opacity-80`}
+                      style={{
+                        left: `${((timeline.start - 1) / totalWeeks) * 100}%`,
+                        width: `${((timeline.end - timeline.start + 1) / totalWeeks) * 100}%`,
+                      }}
+                    >
+                      {/* Progress overlay */}
+                      <div
+                        className="absolute inset-y-0 left-0 bg-white/30 rounded-l"
+                        style={{ width: `${progress}%` }}
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center text-white text-xs font-medium">
+                        {progress}%
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
             );

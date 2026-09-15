@@ -26,7 +26,10 @@ export function validateUser(users: User[], actor: User, input: UserInput, id?: 
   if (!input.name.trim()) throw new Error("Enter the user name.");
   const email = input.email.trim().toLowerCase();
   if (
-    !(old?.source === "trygc_it_manual.html" && email === "") &&
+    !(
+      ["trygc_it_manual.html", "HR country team supplied by user"].includes(old?.source ?? "") &&
+      email === ""
+    ) &&
     !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
   )
     throw new Error("Enter a valid email address.");
